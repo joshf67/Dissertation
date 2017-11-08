@@ -30,8 +30,12 @@ public class HumanLife : MonoBehaviour {
 	public float happiness;
 
 	public float foodDegregation;
-	public float energyDegregation;
+    public float foodSleepDegregation;
+    public float energyDegregation;
 	public float foodCost;
+
+    public Stats stats;
+    public bool haveJob = false;
 
 	public int state = 0;
 
@@ -42,6 +46,11 @@ public class HumanLife : MonoBehaviour {
 
 	// Update is called once per frame
 	void Update () {
+        if (food <= -1000)
+        {
+            Destroy(gameObject);
+        }
+
 		switch (state) {
 		case 0:
 			Work ();
@@ -55,14 +64,24 @@ public class HumanLife : MonoBehaviour {
 		case 3:
 			Sleep ();
 			break;
+        case 4:
+            FindJob();
+            break;
 		}
 		checkTime ();
+
+        if (state == 3)
+        {
+            food -= foodSleepDegregation * time.timeMult * Time.deltaTime;
+        } else
+        {
+            energy -= energyDegregation * time.timeMult * Time.deltaTime;
+            food -= foodDegregation * time.timeMult * Time.deltaTime;
+        }
 	}
 
 	void checkTime() {
-
-		food -= foodDegregation * time.timeMult * Time.deltaTime;
-
+        
 		//sleep
 		if ((time.CurrentHMS.x >= sleepHours.x ||
 			time.CurrentHMS.x >= 0) &&
@@ -71,11 +90,9 @@ public class HumanLife : MonoBehaviour {
 			return;
 		}
 
-		energy -= energyDegregation * time.timeMult * Time.deltaTime;
-
 		//work
 		if (time.CurrentHMS.x >= workHours.x && 
-			time.CurrentHMS.x < workHours.y) {
+			time.CurrentHMS.x < workHours.y && haveJob) {
 			if (food >= maxFood / 10) {
 				state = 0;
 				return;
@@ -87,7 +104,7 @@ public class HumanLife : MonoBehaviour {
 
 		//shop
 		if (time.CurrentHMS.x >= workHours.y && 
-			time.CurrentHMS.x < sleepHours.x) {
+			time.CurrentHMS.x < sleepHours.x && haveJob) {
 			if (food <= maxFood / 10) {
 				state = 1;
 				return;
@@ -96,17 +113,35 @@ public class HumanLife : MonoBehaviour {
 
 		//entertainment
 		if (time.CurrentHMS.x >= workHours.y && 
-			time.CurrentHMS.x < sleepHours.x) {
+			time.CurrentHMS.x < sleepHours.x && haveJob) {
 			if (food > maxFood / 10) {
 				state = 2;
 				return;
 			}
 		}
 
+        //Find Job
+        if (time.CurrentHMS.x >= sleepHours.y &&
+            time.CurrentHMS.x < sleepHours.x && !haveJob)
+        {
+            if (cash > foodCost)
+            {
+                state = 4;
+                return;
+            } else
+            {
+                state = 4;
+                return;
+            }
+        }
 
-	}
 
-	void Sleep() {
+    }
+
+    void FindJob() {
+
+    }
+    void Sleep() {
 
 		if (Vector3.Distance (agent.destination, home.transform.position) > minDist) {
 			agent.SetDestination (home.transform.position);
