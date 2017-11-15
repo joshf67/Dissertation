@@ -34,7 +34,6 @@ public class HumanLife : MonoBehaviour {
 	public float foodCost;
 
     public Stats stats;
-    public bool haveJob = false;
 	public float timeWorking;
 
 	public int state = 0;
@@ -42,6 +41,11 @@ public class HumanLife : MonoBehaviour {
 	void Start() {
 		agent = GetComponent<NavMeshAgent> ();
 		agent.stoppingDistance = minDist;
+		time = GameObject.FindObjectOfType<CurrentTime> ();
+		//shop = GameObject.FindGameObjectWithTag ("Shop");
+		//work = GameObject.FindGameObjectWithTag ("Work");
+		entertainment = GameObject.FindGameObjectWithTag ("Entertainment");
+		home = GameObject.FindGameObjectWithTag ("Home");
 	}
 
 	// Update is called once per frame
@@ -71,6 +75,9 @@ public class HumanLife : MonoBehaviour {
         case 4:
             FindJob();
             break;
+		case 5:
+			GoHome ();
+			break;
 		}
 		checkTime ();
 
@@ -95,28 +102,30 @@ public class HumanLife : MonoBehaviour {
 		}
 
 		//work
-		if (time.CurrentHMS.x >= stats.workHours.x &&
-		    time.CurrentHMS.x < stats.workHours.y && haveJob) {
+		if (time.CurrentHMS.x >= (stats.workHours.x - stats.travelHours) &&
+			time.CurrentHMS.x < stats.workHours.y && stats.hasJob) {
 			if (food >= maxFood / 10) {
 				state = 0;
 				return;
 			} else {
 				//grab food
 				state = 1;
+				return;
 			}
-		} else if (!haveJob) {
+		} else if (!stats.hasJob) {
 			if (food >= maxFood / 10) {
 				state = 0;
 				return;
 			} else {
 				//grab food
 				state = 1;
+				return;
 			}
 		}
 
 		//shop
 		if (time.CurrentHMS.x >= stats.workHours.y && 
-			time.CurrentHMS.x < stats.sleepHours.x && haveJob) {
+			time.CurrentHMS.x < stats.sleepHours.x && stats.hasJob) {
 			if (food <= maxFood / 10) {
 				state = 1;
 				return;
@@ -125,7 +134,8 @@ public class HumanLife : MonoBehaviour {
 
 		//entertainment
 		if (time.CurrentHMS.x >= stats.workHours.y && 
-			time.CurrentHMS.x < stats.sleepHours.x && haveJob) {
+			time.CurrentHMS.x < stats.sleepHours.x && stats.hasJob &&
+			happiness < maxHappiness/10) {
 			if (food > maxFood / 10) {
 				state = 2;
 				return;
@@ -134,7 +144,7 @@ public class HumanLife : MonoBehaviour {
 
         //Find Job
 		if (time.CurrentHMS.x >= stats.sleepHours.y &&
-			time.CurrentHMS.x < stats.sleepHours.x && !haveJob)
+			time.CurrentHMS.x < stats.sleepHours.x && !stats.hasJob)
         {
             if (cash > foodCost)
             {
@@ -147,6 +157,9 @@ public class HumanLife : MonoBehaviour {
             }
         }
 
+		//go home
+		state = 5;
+
 
     }
 
@@ -157,7 +170,6 @@ public class HumanLife : MonoBehaviour {
 			if (bus.findWorkers) {
 				if (bus.testStats (stats)) {
 					if (!bus.applications.Contains (this)) {
-						jobApplications.Add (bus);
 						bus.applications.Add (this);
 					}
 				}
@@ -183,7 +195,6 @@ public class HumanLife : MonoBehaviour {
     }
 
     void Sleep() {
-
 		if (Vector3.Distance (agent.destination, home.transform.position) > minDist) {
 			agent.SetDestination (home.transform.position);
 		} else {
@@ -195,14 +206,35 @@ public class HumanLife : MonoBehaviour {
 		}
 	}
 
-	void Work() {
-		if (Vector3.Distance (agent.destination, work.transform.position) > minDist) {
-			agent.SetDestination (work.transform.position);
+	void GoHome() {
+		if (Vector3.Distance (agent.destination, home.transform.position) > minDist) {
+			agent.SetDestination (home.transform.position);
 		} else {
-			if (Vector3.Distance (transform.position, work.transform.position) < minDist) {
+			if (Vector3.Distance (transform.position, home.transform.position) < minDist) {
+				if (energy < maxEnergy) {
+					energy += (Time.deltaTime * time.timeMult)/2;
+				}
+				if (stats.wantKids) {
+					if (stats.relationship.Count != 0) {
+						if (stats.relationship [0].state == 5) {
+							if (stats.relationship [0].stats.wantKids) {
+								GameObject.FindObjectOfType<Reproduction> ().reproduce (this, stats.relationship [0]);
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	void Work() {
+		if (Vector3.Distance (agent.destination, stats.job.transform.position) > minDist) {
+			agent.SetDestination (stats.job.transform.position);
+		} else {
+			if (Vector3.Distance (transform.position, stats.job.transform.position) < minDist) {
 				//energy -= energyDegregation * time.timeMult;
 				//cash += Time.deltaTime * income * time.timeMult;
-				if (stats.job.work ()) {
+				if ((time.CurrentHMS.x >= stats.workHours.x || stats.workHours.y < stats.workHours.x) && (time.CurrentHMS.x < stats.workHours.y)) {
 					timeWorking += time.timeMult * Time.deltaTime;
 				}
 			}
@@ -211,18 +243,38 @@ public class HumanLife : MonoBehaviour {
 
 	public void Pay() {
 		cash += stats.income * timeWorking;
+		timeWorking = 0;
+	}
+
+	Business findClosestStore() {
+		Business[] all = GameObject.FindObjectsOfType<Business> ();
+		Business closest = null;
+		float distance = Mathf.Infinity;
+		foreach (Business bus in all) {
+			if (bus.open) {
+				if (Vector3.Distance(transform.position, bus.transform.position) < distance) {
+					distance = Vector3.Distance (transform.position, bus.transform.position);
+					closest = bus;
+				}
+			}
+		}
+		return closest;
 	}
 
 	void Shop() {
-		if (Vector3.Distance (agent.destination, shop.transform.position) > minDist) {
-			agent.SetDestination (shop.transform.position);
-		} else {
-			if (Vector3.Distance (transform.position, shop.transform.position) < minDist) {
-				if (food < maxFood) {
-					food = maxFood;
-					cash -= foodCost;
+		if (shop && shop.GetComponent<Business> ().open) {
+			if (Vector3.Distance (agent.destination, shop.transform.position) > minDist) {
+				agent.SetDestination (shop.transform.position);
+			} else {
+				if (Vector3.Distance (transform.position, shop.transform.position) < minDist) {
+					if (food < maxFood) {
+						food = maxFood;
+						cash -= foodCost;
+					}
 				}
 			}
+		} else {
+			shop = findClosestStore ().gameObject;
 		}
 	}
 

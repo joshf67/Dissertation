@@ -13,11 +13,7 @@ public class Business : MonoBehaviour {
     public Stats requiredStats;
 	public float paymentTimeDays;
 	public bool paymentMade = false;
-
-	// Use this for initialization
-	void Start () {
-		
-	}
+	public bool open = false;
 	
 	// Update is called once per frame
 	void Update () {
@@ -26,7 +22,7 @@ public class Business : MonoBehaviour {
 			foreach (HumanLife human in workers) {
 				human.Pay ();
 			}
-		} else {
+		} else if (GameObject.FindObjectOfType<CurrentTime> ().CurrentDWMY.x != paymentTimeDays) {
 			paymentMade = false;
 		}
 		if (timeForWorkers <= 0) {
@@ -36,6 +32,7 @@ public class Business : MonoBehaviour {
 		} else {
 			timeForWorkers -= Time.deltaTime * GameObject.FindObjectOfType<CurrentTime> ().timeMult;
 		}
+		pollWorkers ();
 	}
 
 	public bool testStats(Stats stat) {
@@ -47,10 +44,6 @@ public class Business : MonoBehaviour {
 			}
 		}
 		return false;
-	}
-
-	public bool work() {
-		return true;
 	}
 
 	void testApplications() {
@@ -74,17 +67,35 @@ public class Business : MonoBehaviour {
 		}
 		int accepted = 0;
 		for (int a = 0; a < requiredWorkers; a++) {
-			workers.Add (applications [accepted]);
-			workers [workers.Count-1].stats.income = requiredStats.income;
-			workers [workers.Count-1].stats.workHours = requiredStats.workHours;
-			workers [workers.Count-1].stats.hasJob = true;
-			workers [workers.Count - 1].stats.job = this;
-			workers [workers.Count-1].recalculateSleep();
-			accepted++;
+			if (a < applications.Count) {
+				if (applications [a].stats.hasJob) {
+					applications.RemoveAt (a);
+					a--;
+				} else {
+					workers.Add (applications [a]);
+					workers [workers.Count - 1].stats.income = requiredStats.income;
+					workers [workers.Count - 1].stats.workHours = requiredStats.workHours;
+					workers [workers.Count - 1].stats.hasJob = true;
+					workers [workers.Count - 1].stats.job = this;
+					workers [workers.Count - 1].recalculateSleep ();
+					accepted++;
+				}
+			} else {
+				break;
+			}
 		}
-		for (int a = 0; a < applications.Count; a++) {
-			applications.RemoveAt(0);
+		for (int a = 0; a < accepted; a++) {
+			applications.RemoveAt (0);
 		}
 		requiredWorkers -= accepted;
+	}
+
+	void pollWorkers() {
+		open = false;
+		foreach (HumanLife human in workers) {
+			if (human.state == 0) {
+				open = true;
+			}
+		}
 	}
 }
