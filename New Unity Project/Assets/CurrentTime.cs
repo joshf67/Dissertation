@@ -5,6 +5,8 @@ using UnityEngine.UI;
 
 public class CurrentTime : MonoBehaviour {
 
+	public Vector3 DWM;
+	public Vector4 CurrentDWMY;
 	public Vector3 HMS;
 	public float timeMult;
 	public Vector2 CurrentHMS;
@@ -15,33 +17,66 @@ public class CurrentTime : MonoBehaviour {
 	void Update () {
 		currentTime += Time.deltaTime * timeMult;
 		//seconds
-		if (currentTime >= HMS.z) {
+		while (currentTime >= HMS.z) {
 			CurrentHMS.y += 1;
 			currentTime -= HMS.z;
 		}
 
 		//minutes
-		if (CurrentHMS.y >= HMS.y) {
+		while (CurrentHMS.y >= HMS.y) {
 			CurrentHMS.x += 1;
 			CurrentHMS.y -= HMS.y;
 		}
 
 		//hours
-		if (CurrentHMS.x >= HMS.x) {
-			CurrentHMS.x = 0;
+		while (CurrentHMS.x >= HMS.x) {
+			CurrentHMS.x -= HMS.x;
 			CurrentHMS.y = 0;
+			CurrentDWMY.x += 1;
 		}
 
+		//weeks
+		if (CurrentDWMY.x >= DWM.z) {
+			CurrentDWMY.y += 1;
+			CurrentDWMY.x = 0;
+		}
+
+		//months
+		if (CurrentDWMY.y >= DWM.y) {
+			CurrentDWMY.z += 1;
+			CurrentDWMY.y = 0;
+		}
+
+		//years
+		if (CurrentDWMY.z >= DWM.x) {
+			CurrentDWMY.w += 1;
+			CurrentDWMY.z = 0;
+		}
+			
 		string output = null;
+
+		output += "Day:" + CurrentDWMY.x;
+		output += "\n";
+		output += "Week:" + CurrentDWMY.y;
+		output += "\n";
+		output += "Month:" + CurrentDWMY.z;
+		output += "\n";
+		output += "Year:" + CurrentDWMY.w;
+		output += "\n";
+
+		//offset text
 		if (CurrentHMS.x < 10) {
 			output += "0";
 		}
 
 		output += CurrentHMS.x + ":";
 
+		//offset text
 		if (CurrentHMS.y < 10) {
 			output += "0";
 		}
+
+
 
 		output += CurrentHMS.y + ":";
 

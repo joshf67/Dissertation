@@ -13,10 +13,9 @@ public class HumanLife : MonoBehaviour {
 	public GameObject home;
 	public GameObject entertainment;
 
-	public float minDist;
+	public List<Business> jobApplications;
 
-	public Vector2 workHours;
-	public Vector2 sleepHours;
+	public float minDist;
 
 	public float cash;
 	public float income;
@@ -36,6 +35,7 @@ public class HumanLife : MonoBehaviour {
 
     public Stats stats;
     public bool haveJob = false;
+	public float timeWorking;
 
 	public int state = 0;
 
@@ -53,7 +53,11 @@ public class HumanLife : MonoBehaviour {
 
 		switch (state) {
 		case 0:
-			Work ();
+			if (stats.hasJob) {
+				Work ();
+			} else {
+				FindJob ();
+			}
 			break;
 		case 1:
 			Shop ();
@@ -83,16 +87,24 @@ public class HumanLife : MonoBehaviour {
 	void checkTime() {
         
 		//sleep
-		if ((time.CurrentHMS.x >= sleepHours.x ||
+		if ((time.CurrentHMS.x >= stats.sleepHours.x ||
 			time.CurrentHMS.x >= 0) &&
-			time.CurrentHMS.x < sleepHours.y) {
+			time.CurrentHMS.x < stats.sleepHours.y) {
 			state = 3;
 			return;
 		}
 
 		//work
-		if (time.CurrentHMS.x >= workHours.x && 
-			time.CurrentHMS.x < workHours.y && haveJob) {
+		if (time.CurrentHMS.x >= stats.workHours.x &&
+		    time.CurrentHMS.x < stats.workHours.y && haveJob) {
+			if (food >= maxFood / 10) {
+				state = 0;
+				return;
+			} else {
+				//grab food
+				state = 1;
+			}
+		} else if (!haveJob) {
 			if (food >= maxFood / 10) {
 				state = 0;
 				return;
@@ -103,8 +115,8 @@ public class HumanLife : MonoBehaviour {
 		}
 
 		//shop
-		if (time.CurrentHMS.x >= workHours.y && 
-			time.CurrentHMS.x < sleepHours.x && haveJob) {
+		if (time.CurrentHMS.x >= stats.workHours.y && 
+			time.CurrentHMS.x < stats.sleepHours.x && haveJob) {
 			if (food <= maxFood / 10) {
 				state = 1;
 				return;
@@ -112,8 +124,8 @@ public class HumanLife : MonoBehaviour {
 		}
 
 		//entertainment
-		if (time.CurrentHMS.x >= workHours.y && 
-			time.CurrentHMS.x < sleepHours.x && haveJob) {
+		if (time.CurrentHMS.x >= stats.workHours.y && 
+			time.CurrentHMS.x < stats.sleepHours.x && haveJob) {
 			if (food > maxFood / 10) {
 				state = 2;
 				return;
@@ -121,8 +133,8 @@ public class HumanLife : MonoBehaviour {
 		}
 
         //Find Job
-        if (time.CurrentHMS.x >= sleepHours.y &&
-            time.CurrentHMS.x < sleepHours.x && !haveJob)
+		if (time.CurrentHMS.x >= stats.sleepHours.y &&
+			time.CurrentHMS.x < stats.sleepHours.x && !haveJob)
         {
             if (cash > foodCost)
             {
@@ -139,8 +151,37 @@ public class HumanLife : MonoBehaviour {
     }
 
     void FindJob() {
+		Business[] businesses = GameObject.FindObjectsOfType<Business> ();
+		for (int a = 0; a < businesses.Length; a++) {
+			Business bus = businesses [a];
+			if (bus.findWorkers) {
+				if (bus.testStats (stats)) {
+					if (!bus.applications.Contains (this)) {
+						jobApplications.Add (bus);
+						bus.applications.Add (this);
+					}
+				}
+			}
+		}
 
+		/*
+
+		Business best;
+		float currentBest = -Mathf.Infinity;
+
+		//fast check of applications and find best
+		foreach (Business bus in jobApplications) {
+			
+			if (bus.requiredStats.income > currentBest) {
+				currentBest = bus.requiredStats.income;
+				best = bus;
+			}
+		}
+
+*/
+			
     }
+
     void Sleep() {
 
 		if (Vector3.Distance (agent.destination, home.transform.position) > minDist) {
@@ -160,9 +201,16 @@ public class HumanLife : MonoBehaviour {
 		} else {
 			if (Vector3.Distance (transform.position, work.transform.position) < minDist) {
 				//energy -= energyDegregation * time.timeMult;
-				cash += Time.deltaTime * income * time.timeMult;
+				//cash += Time.deltaTime * income * time.timeMult;
+				if (stats.job.work ()) {
+					timeWorking += time.timeMult * Time.deltaTime;
+				}
 			}
 		}
+	}
+
+	public void Pay() {
+		cash += stats.income * timeWorking;
 	}
 
 	void Shop() {
@@ -187,4 +235,30 @@ public class HumanLife : MonoBehaviour {
 			}
 		}
 	}
+
+	public void recalculateSleep() {
+		stats.sleepHours.y = stats.workHours.x - stats.travelHours;
+		if (stats.sleepHours.y - 8 < 0) {
+			stats.sleepHours.x = 24 - (8 - stats.sleepHours.y);
+		} else {
+			stats.sleepHours.x = stats.sleepHours.y - 8;
+		}
+	}
+}
+	
+[System.Serializable]
+public struct Stats
+{
+	public List<HumanLife> relationship;
+	public bool wantKids;
+	public int age, intellegence, strength, dexterity;
+	public bool hasJob;
+	public bool inEducation;
+	public string jobTitle;
+	public Business job;
+	public float income;
+	public Vector2 wantedHours;
+	public Vector2 workHours;
+	public float travelHours;
+	public Vector2 sleepHours;
 }
