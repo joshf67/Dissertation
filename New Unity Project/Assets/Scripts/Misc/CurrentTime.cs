@@ -39,6 +39,12 @@ public class CurrentTime : MonoBehaviour {
 		if (CurrentDWMY.x >= DWM.z) {
 			CurrentDWMY.y += 1;
 			CurrentDWMY.x = 0;
+			foreach (HumanLife person in GameObject.FindObjectsOfType<HumanLife>()) {
+				person.updateAge ();
+			}
+			foreach (Business buss in GameObject.FindObjectsOfType<Business>()) {
+				buss.payCosts ();
+			}
 		}
 
 		//months
@@ -85,6 +91,17 @@ public class CurrentTime : MonoBehaviour {
 		}
 
 		output += Mathf.FloorToInt(currentTime);
+
+		float globalCash = 0;
+		foreach(Business bus in GameObject.FindObjectsOfType<Business>()) {
+			globalCash += bus.cash;
+		}
+
+		foreach(HumanLife hum in GameObject.FindObjectsOfType<HumanLife>()) {
+			globalCash += hum.cash;
+		}
+
+		output += "\nGlobal Cash : " + ((int)globalCash);
 
 		text.text = output;
 		

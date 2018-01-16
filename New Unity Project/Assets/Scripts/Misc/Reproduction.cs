@@ -14,11 +14,25 @@ public class Reproduction : MonoBehaviour {
 		mate1.stats.wantKids = false;
 		mate2.stats.wantKids = false;
 
+		//setup accomodation stuff
+		mate1.stats.accomodation.occupants.Add (child);
+		mate2.stats.accomodation.occupants.Add (child);
+		child.stats.accomodation.occupants.Add (child);
+		child.stats.accomodation.occupants.Add (mate1);
+		child.stats.accomodation.occupants.Add (mate2);
+		child.stats.accomodation.requiredRooms = mate1.stats.accomodation.requiredRooms;
+
+		//setup relationship stuff
+		mate1.stats.relationship.Add(new relation(child, 2));
+		mate2.stats.relationship.Add(new relation(child, 2));
+		child.stats.relationship.Add(new relation(mate1, 1));
+		child.stats.relationship.Add(new relation(mate2, 1));
+
 		//intellegence
 		if (Random.Range (0, 100) <= chanceOfMutation) {
-			child.stats.intellegence = Random.Range (0, (mate1.stats.intellegence + mate2.stats.intellegence) / 2);
+			child.stats.intelligence = Random.Range (0, (mate1.stats.intelligence + mate2.stats.intelligence) / 2);
 		} else {
-			child.stats.intellegence = (mate1.stats.intellegence + mate2.stats.intellegence) / 2;
+			child.stats.intelligence = (mate1.stats.intelligence + mate2.stats.intelligence) / 2;
 		}
 
 		//strength

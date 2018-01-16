@@ -30,7 +30,6 @@ H:\New Unity Project\Temp\bin\Debug\UnityEngine.VR.xml
 H:\New Unity Project\obj\Debug\Assembly-CSharp.dll
 H:\New Unity Project\obj\Debug\Assembly-CSharp.pdb
 D:\Desktop\Git\Dissertation\New Unity Project\obj\Debug\Assembly-CSharp.csprojResolveAssemblyReference.cache
-D:\Desktop\Git\Dissertation\New Unity Project\obj\Debug\Assembly-CSharp.dll
 D:\Desktop\Git\Dissertation\New Unity Project\Temp\bin\Debug\Assembly-CSharp.dll
 D:\Desktop\Git\Dissertation\New Unity Project\Temp\bin\Debug\Assembly-CSharp.pdb
 D:\Desktop\Git\Dissertation\New Unity Project\Temp\bin\Debug\nunit.framework.dll
@@ -59,4 +58,5 @@ D:\Desktop\Git\Dissertation\New Unity Project\Temp\bin\Debug\nunit.framework.xml
 D:\Desktop\Git\Dissertation\New Unity Project\Temp\bin\Debug\UnityEngine.Analytics.xml
 D:\Desktop\Git\Dissertation\New Unity Project\Temp\bin\Debug\UnityEngine.HoloLens.xml
 D:\Desktop\Git\Dissertation\New Unity Project\Temp\bin\Debug\UnityEngine.VR.xml
+D:\Desktop\Git\Dissertation\New Unity Project\obj\Debug\Assembly-CSharp.dll
 D:\Desktop\Git\Dissertation\New Unity Project\obj\Debug\Assembly-CSharp.pdb
