@@ -1,0 +1,1 @@
+https://stackoverflow.com/questions/43241213/override-base-class-property-to-a-derived-type-and-access-via-base-class
