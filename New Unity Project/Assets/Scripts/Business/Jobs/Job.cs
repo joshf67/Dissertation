@@ -27,12 +27,23 @@ public class Job : MonoBehaviour {
 		time = GameObject.FindObjectOfType<CurrentTime> ();
 	}
 
+	public void removeApplication(HumanLife person) {
+		for (int a = 0; a < applications.Count; a++) {
+			if (applications [a] == person) {
+				applications.RemoveAt (a);
+				return;
+			}
+		}
+	}
+
 	public virtual bool work(HumanLife worker) {
 		return true;
 	}
 
 	public virtual void addWorker(HumanLife worker) {
-		workers.Add (new JobData(worker));
+		workers.Add (ScriptableObject.CreateInstance <JobData>());
+		worker.stats.jobData = workers [workers.Count - 1];
+		workers [workers.Count - 1].worker = worker;
 	}
 
 	public void removeWorker(HumanLife worker) {

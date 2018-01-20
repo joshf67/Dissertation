@@ -2,9 +2,12 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class JobData : MonoBehaviour {
+public class JobData : ScriptableObject {
 	public HumanLife worker;
 	public bool ignoreDistance;
+	public Vector2 workHours;
+	public Vector2 breakHours;
+	public float pay;
 
 	public JobData (HumanLife actor) {
 		worker = actor;

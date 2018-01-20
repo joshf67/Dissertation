@@ -2,12 +2,10 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Business : MonoBehaviour {
+public abstract class Business : MonoBehaviour {
 
 	public float cash;
 	public float rent;
-
-	public List<product> products;
 
 	public bool online;
 	//public List<HumanLife> customersOnline;
@@ -18,7 +16,6 @@ public class Business : MonoBehaviour {
 	public List<Job> occupations;
 	public bool open;
 
-	
 	// Update is called once per frame
 	void Update () {
 		//save current day
@@ -68,26 +65,11 @@ public class Business : MonoBehaviour {
 		return false;
 	}
 
-	public bool charge(product prod, HumanLife person) {
-		if (person.cash >= prod.cost) {
-			person.cash -= prod.cost;
-			cash += prod.cost;
-			return true;
-		} else {
-			return false;
-		}
+	public virtual bool charge(Product prod, HumanLife person) {
+		return false;
 	}
 
-	public bool chargeDelivery(product prod, HumanLife person) {
-		for (int a = 0; a < occupations.Count; a++) {
-			if (occupations [a].delivery) {
-				deliveryInfo details = new deliveryInfo();
-				details.items.Add (prod.data);
-				details.recipient = person;
-				((Delivery)occupations [a]).deliveryJobs.Add (details);
-				return true;
-			}
-		}
+	public virtual bool chargeDelivery(Product prod, HumanLife person) {
 		return false;
 	}
 
@@ -142,56 +124,10 @@ public class Business : MonoBehaviour {
 			job.applications [0].stats.job = job;
 			job.applications [0].recalculateSleep ();
 
-			job.applications.RemoveAt (0);
+			job.applications [0].resetApplications ();
 			job.requiredWorkers--;
 		}
 	}
-
-	/*
-	void testApplications() {
-		List<int> arranged = new List<int>();
-		foreach (HumanLife human in applications) {
-			int value = human.stats.intellegence - requiredStats.intellegence;
-			value += human.stats.strength - requiredStats.strength;
-			value += human.stats.dexterity - requiredStats.dexterity;
-			arranged.Add (value);
-		}
-		for (int a = 0; a < arranged.Count - 1; a++) {
-			if (arranged [a] < arranged [a + 1]) {
-				int value = arranged [a];
-				HumanLife hum = applications [a];
-
-				applications [a] = applications [a + 1];
-				arranged [a] = arranged [a + 1];
-				arranged [a + 1] = value;
-				applications [a + 1] = hum;
-			}
-		}
-		int accepted = 0;
-		for (int a = 0; a < requiredWorkers; a++) {
-			if (a < applications.Count) {
-				if (applications [a].stats.hasJob) {
-					applications.RemoveAt (a);
-					a--;
-				} else {
-					workers.Add (applications [a]);
-					workers [workers.Count - 1].stats.income = requiredStats.income;
-					workers [workers.Count - 1].stats.workHours = requiredStats.workHours;
-					workers [workers.Count - 1].stats.hasJob = true;
-					workers [workers.Count - 1].stats.company = this;
-					workers [workers.Count - 1].recalculateSleep ();
-					accepted++;
-				}
-			} else {
-				break;
-			}
-		}
-		for (int a = 0; a < accepted; a++) {
-			applications.RemoveAt (0);
-		}
-		requiredWorkers -= accepted;
-	}
-	*/
 
 	void pollWorkers(Job job) {
 		if (!job.automated) {
@@ -210,25 +146,15 @@ public class Business : MonoBehaviour {
 		cash -= rent;
 	}
 
-	public List<product> searchForItem(int itemType, string itemName = "") {
-		//setup return value
-		List<product> returnVal = new List<product> ();
-		//loop through all products
-		foreach (product prod in products) {
-			//check if product is equal to item type
-			if (prod.data.type == itemType) {
-				//check if item name is null
-				if (itemName == "") {
-					returnVal.Add (prod);
-				} else {
-					//check if item name is equal to product name
-					if (string.Equals(prod.data.name,itemName,System.StringComparison.OrdinalIgnoreCase)) {
-						returnVal.Add (prod);
-					}
-				}
-			}
+	//IMPORTANT
+	public virtual List<Product> searchProducts(shopTest data) {
+		List<Product> returnVal = searchForProduct (data);
+		if (returnVal == null) {
+			returnVal = new List<Product> ();
 		}
 		return returnVal;
 	}
-}
 
+	protected abstract List<Product> searchForProduct (shopTest data);
+
+}

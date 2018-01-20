@@ -12,6 +12,8 @@ public class CurrentTime : MonoBehaviour {
 	public Vector2 CurrentHMS;
 	public float currentTime;
 	public Text text;
+
+	public int[] hourPurchases = new int[24];
 	
 	// Update is called once per frame
 	void Update () {
@@ -104,7 +106,11 @@ public class CurrentTime : MonoBehaviour {
 		output += "\nGlobal Cash : " + ((int)globalCash);
 
 		text.text = output;
-		
 
 	}
+
+	public void addPurchase() {
+		hourPurchases[(int)CurrentHMS.x]++;
+	}
+
 }

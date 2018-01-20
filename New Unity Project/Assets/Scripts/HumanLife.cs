@@ -12,9 +12,9 @@ public class HumanLife : MonoBehaviour {
 	public GameObject entertainment;
 
 	public List<Job> jobApplications;
-	public List<product> onSale;
+	public List<Product> onSale;
 	public List<Business> ignoreForCurrent;
-	public int lastItemSearchedFor;
+	public itemTypes lastItemSearchedFor;
 	public string lastItemNameSearchFor;
 
 	public List<item> inventory;
@@ -42,7 +42,7 @@ public class HumanLife : MonoBehaviour {
     public Stats stats;
 	public float timeWorking;
 
-	public bool waitingForDelivery;
+	public int waitingForDelivery;
 
 	public int state = 0;
 
@@ -181,31 +181,26 @@ public class HumanLife : MonoBehaviour {
 				}
 			}
 		}
-
-		/*
-
-		Business best;
-		float currentBest = -Mathf.Infinity;
-
-		//fast check of applications and find best
-		foreach (Business bus in jobApplications) {
-			
-			if (bus.requiredStats.income > currentBest) {
-				currentBest = bus.requiredStats.income;
-				best = bus;
-			}
-		}
-
-*/
-			
     }
+
+	public void resetApplications() {
+		foreach (Job job in jobApplications) {
+			job.removeApplication (this);
+		}
+		jobApplications.Clear ();
+	}
 
     void Sleep() {
 		if (stats.accomodation.home) {
-			if (Functions.checkDistance (agent, stats.accomodation.home.transform.position, minDist)) {
-				if (Vector3.Distance (transform.position, stats.accomodation.home.transform.position) < minDist) {
-					if (energy < maxEnergy) {
-						energy += Time.deltaTime * time.timeMult;
+			if (food <= maxFood / 10) {
+				eatFood ();
+				return;
+			} else {
+				if (Functions.checkDistance (agent, stats.accomodation.home.transform.position, minDist)) {
+					if (Vector3.Distance (transform.position, stats.accomodation.home.transform.position) < minDist) {
+						if (energy < maxEnergy) {
+							energy += Time.deltaTime * time.timeMult;
+						}
 					}
 				}
 			}
@@ -258,7 +253,7 @@ public class HumanLife : MonoBehaviour {
 	}
 
 	void sellHome() {
-		stats.accomodation.homeData.ownerScript.houses [stats.accomodation.homeData.ownerScriptIndex].occupants.Clear ();
+		stats.accomodation.homeData.ownerScript.houses [stats.accomodation.homeData.ownerScriptIndex].data.occupants.Clear ();
 	}
 
 	public void resetHome() {
@@ -276,8 +271,8 @@ public class HumanLife : MonoBehaviour {
 		availableCash /= 2;
 
 		foreach (Housing houses in GameObject.FindObjectsOfType<Housing>()) {
-			foreach (House potentialHome in houses.findHouse(availableCash, stats.accomodation.requiredRooms)) {
-				availableHomes.Add (potentialHome);
+			foreach (HousingProduct potentialHome in houses.searchProducts(new shopTest(itemTypes.houses, "house", availableCash, this))) {
+				availableHomes.Add (potentialHome.data);
 			}
 		}
 
@@ -288,8 +283,10 @@ public class HumanLife : MonoBehaviour {
 				float distance = 0;
 				float distanceToNext = 0;
 				foreach (HumanLife person in stats.accomodation.occupants) {
-					distance += Vector3.Distance (person.stats.job.transform.position, availableHomes [a].position);
-					distanceToNext += Vector3.Distance (person.stats.job.transform.position, availableHomes [a + 1].position);
+					if (person.stats.job) {
+						distance += Vector3.Distance (person.stats.job.transform.position, availableHomes [a].position);
+						distanceToNext += Vector3.Distance (person.stats.job.transform.position, availableHomes [a + 1].position);
+					}
 				}
 				if (availableHomes [a].cost + distance > availableHomes [a + 1].cost + distanceToNext) {
 					House tempHouse = availableHomes [a];
@@ -302,7 +299,7 @@ public class HumanLife : MonoBehaviour {
 
 		if (availableHomes.Count != 0) {
 			foreach (HumanLife person in stats.accomodation.occupants) {
-				person.stats.accomodation.homeData = availableHomes [0].ownerScript.houses[availableHomes[0].ownerScriptIndex];
+				person.stats.accomodation.homeData = availableHomes [0].ownerScript.houses[availableHomes[0].ownerScriptIndex].data;
 				person.stats.accomodation.home = person.stats.accomodation.homeData.obj;
 			}
 			stats.accomodation.homeData.occupants = stats.accomodation.occupants;
@@ -312,6 +309,14 @@ public class HumanLife : MonoBehaviour {
 	}
 
 	void Work() {
+		if (stats.jobData) {
+			if (stats.jobData.ignoreDistance) {
+				if (stats.job.work (this)) {
+					timeWorking += time.timeMult * Time.deltaTime;
+					return;
+				}
+			}
+		}
 		if (Functions.checkDistance (agent, stats.job.transform.position, minDist)) {
 			//energy -= energyDegregation * time.timeMult;
 			//cash += Time.deltaTime * income * time.timeMult;
@@ -327,7 +332,7 @@ public class HumanLife : MonoBehaviour {
 		timeWorking = 0;
 	}
 
-	Business findClosestStore(int itemTypeRequired, string itemNameRequired = "", List<Business> ignore = null) {
+	Business findClosestStore(itemTypes itemTypeRequired, string itemNameRequired = "", float totalCash = 0, List<Business> ignore = null) {
 		Business[] all = GameObject.FindObjectsOfType<Business> ();
 		Business closest = null;
 		float distance = Mathf.Infinity;
@@ -338,13 +343,13 @@ public class HumanLife : MonoBehaviour {
 				}
 			}
 			if (bus.open) {
-				List<product> tempProducts = bus.searchForItem (itemTypeRequired, itemNameRequired);
-				if (tempProducts.Count != 0) {
+				List<Product> tempProducts = bus.searchProducts (new shopTest(itemTypeRequired, itemNameRequired, cash, this));
+				if (tempProducts != null) {
 					if (Vector3.Distance (transform.position, bus.transform.position) < distance) {
 						distance = Vector3.Distance (transform.position, bus.transform.position);
 						closest = bus;
 						onSale.Clear ();
-						foreach (product prod in tempProducts) {
+						foreach (Product prod in tempProducts) {
 							onSale.Add (prod);
 						}
 					}
@@ -354,13 +359,13 @@ public class HumanLife : MonoBehaviour {
 		return closest;
 	}
 
-	void arrangeBasedOnAffect(List<product> products) {
+	void arrangeBasedOnAffect(List<Product> products) {
 		bool more = false;
 		do {
 			more = false;
 			for (int a = 0; a < products.Count - 1; a++) {
-				if (products [a].data.effect < products [a + 1].data.effect) {
-					product tempProduct = products [a];
+				if (((ItemProduct)products [a]).data.effect < ((ItemProduct)products [a + 1]).data.effect) {
+					Product tempProduct = products [a];
 					products [a] = products [a + 1];
 					products [a + 1] = tempProduct;
 					more = true;
@@ -370,19 +375,19 @@ public class HumanLife : MonoBehaviour {
 	}
 
 	//try to buy item from business
-	bool buyItem(Business shopBussiness, product prod, bool delivery) {
+	bool buyItem(Business shopBussiness, Product prod, bool delivery) {
 		//TEMP DELIVERY TEST REMOVE LATER
 		if (delivery) {
 			//check if person can afford item
-			if (shopBussiness.charge (prod, this)) {
-				waitingForDelivery = true;
+			if (shopBussiness.chargeDelivery (prod, this)) {
+				waitingForDelivery++;
 				return true;
 			}
 		} else {
 			//check if person can afford item
 			if (shopBussiness.charge (prod, this)) {
 				//add item to inventory (temp)
-				inventory.Add (prod.data);
+				inventory.Add (((ItemProduct)prod).data);
 				return true;
 			}
 		}
@@ -397,8 +402,8 @@ public class HumanLife : MonoBehaviour {
 				return;
 			}
 		}
-		if (!waitingForDelivery) {
-			Shop (0, "food", maxFood, food);
+		if (waitingForDelivery == 0) {
+			Shop (itemTypes.food, "food", cash, maxFood, food);
 		}
 	}
 
@@ -412,7 +417,7 @@ public class HumanLife : MonoBehaviour {
 			if (cash >= onSale [a].cost) {
 
 				//test if the item refills under the food required
-				if ((maxValue - currentValue > onSale [a].data.effect) || maxValue == -1) {
+				if ((maxValue - currentValue > ((ItemProduct)onSale [a]).data.effect) || maxValue == -1) {
 					//check if the person can buy the first item (best effect)
 					if (a == 0) {
 						if (buyItem (shopBusiness, onSale [0], delivery)) {
@@ -439,7 +444,7 @@ public class HumanLife : MonoBehaviour {
 		shop = null;
 	}
 
-	void Shop(int itemType, string itemName = "", float maxValue = -1, float currentValue = -1) {
+	void Shop(itemTypes itemType, string itemName = "", float totalCash = 0, float maxValue = -1, float currentValue = -1) {
 		//check if search for new item, if so remove ignore list
 		if (lastItemSearchedFor != itemType || lastItemNameSearchFor != itemName) {
 			ignoreForCurrent.Clear ();
@@ -462,7 +467,7 @@ public class HumanLife : MonoBehaviour {
 				}
 			}
 		} else {
-			Business tempShop = findClosestStore (itemType, itemName, ignoreForCurrent);
+			Business tempShop = findClosestStore (itemType, itemName, totalCash, ignoreForCurrent);
 			if (tempShop != null) {
 				shop = tempShop.gameObject;
 			}

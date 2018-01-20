@@ -3,26 +3,6 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [System.Serializable]
-public struct item {
-	public int type;
-	public string name;
-	public float effect;
-}
-
-[System.Serializable]
-public struct product {
-	public string name;
-	public float cost;
-	public item data;
-}
-
-[System.Serializable]
-public struct service {
-	public string name;
-	public float cost;
-}
-
-[System.Serializable]
 public struct room {
 	public List<Furniture> furniture;
 }
@@ -91,3 +71,45 @@ public struct deliveryInfo {
 	public List<item> items;
 	public HumanLife recipient;
 }
+
+[System.Serializable]
+public struct shopTest {
+	public itemTypes productType;
+	public string productName;
+	public float cash;
+	public HumanLife person;
+
+	public shopTest (itemTypes type = 0, string name = "", float money = 0, HumanLife life = null) {
+		productType = type;
+		productName = name;
+		cash = money;
+		person = life;
+	}
+}
+
+[System.Serializable]
+public struct item {
+
+	public int itemType;
+	public string name;
+	public float effect;
+
+}
+
+/*
+[System.Serializable]
+public struct House {
+
+	public List<HumanLife> occupants;
+	public List<room> rooms;
+
+	public float cost;
+	public float initialCost;
+	public int costDays;
+
+	public Vector3 position;
+	public GameObject obj;
+	public Housing ownerScript;
+	public int ownerScriptIndex;
+}
+*/
