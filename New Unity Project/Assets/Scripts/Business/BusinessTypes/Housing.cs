@@ -71,7 +71,7 @@ public class Housing : Business {
 	{
 		switch (one.type) {
 		case itemTypes.houses:
-			return ((HousingProduct)one).data.rooms.Count > person.stats.accomodation.requiredRooms;
+			return ((HousingProduct)one).data.rooms.Count >= person.stats.accomodation.requiredRooms;
 		}
 		return false;
 	}
@@ -93,6 +93,20 @@ public class Housing : Business {
 	protected override bool checkProduct (Product one)
 	{
 		return (houses [one.index].data.occupants.Count == 0);
+	}
+
+	protected override void dailyCheck (int day)
+	{
+		for (int a = 0; a < houses.Count; a++) {
+			if (houses [a].data.costDays == day) {
+				houses [a].data.paymentMade = true;
+				for (int b = 0; b < houses [a].data.occupants.Count; a++) {
+					houses [a].data.occupants [b].cash -= houses [a].data.cost / houses [a].data.occupants.Count;
+				}
+			} else {
+				houses [a].data.paymentMade = false;
+			}
+		}
 	}
 
 }

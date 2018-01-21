@@ -10,6 +10,7 @@ public class House : MonoBehaviour {
 	public float cost;
 	public float initialCost;
 	public int costDays;
+	public bool paymentMade;
 
 	public Vector3 position;
 	public GameObject obj;

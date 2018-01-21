@@ -170,8 +170,8 @@ public class HumanLife : MonoBehaviour {
 		//entertainment needs a function
 
 		//go home
-		if (food >= maxFood / 10) {
-			if (energy >= maxEnergy / 10) {
+		if (food >= maxFood / 2) {
+			if (energy >= maxEnergy / 2) {
 				state = 4;
 				return;
 			} else {
@@ -228,38 +228,35 @@ public class HumanLife : MonoBehaviour {
 		} else {
 			if (!FindHome ()) {
 				Debug.Log ("IM HOMELESS");
+				Debug.Log (agent.destination);
 			}
 		}
 	}
 
 	void GoHome() {
 		if (stats.accomodation.home) {
-			if (Vector3.Distance (agent.destination, stats.accomodation.home.transform.position) > minDist) {
-				agent.SetDestination (stats.accomodation.home.transform.position);
-			} else {
-				if (Vector3.Distance (transform.position, stats.accomodation.home.transform.position) < minDist) {
+			if (Functions.checkDistance(agent, stats.accomodation.home.transform.position, minDist)) {
 					if (energy < maxEnergy) {
 						energy += (Time.deltaTime * time.timeMult) / 2;
 					}
-					if (stats.wantKids) {
-						foreach (relation rel in stats.relationship) {
-							if (rel.relationType == 0) {
-								if (rel.other.stats.wantKids) {
-									if (rel.other.state == 5) {
-										rel.other.stats.wantKids = false;
-										stats.wantKids = false;
-										GameObject.FindObjectOfType<Reproduction> ().reproduce (this, rel.other);
-										foreach (HumanLife person in stats.accomodation.occupants) {
-											person.stats.accomodation.requiredRooms++;
-										}
-										if (stats.accomodation.homeData.rooms.Count < stats.accomodation.requiredRooms) {
-											sellHome ();
-											foreach (HumanLife person in stats.accomodation.occupants) {
-												person.resetHome ();
-											}
-										}
-										break;
+				if (stats.wantKids) {
+					foreach (relation rel in stats.relationship) {
+						if (rel.relationType == 0) {
+							if (rel.other.stats.wantKids) {
+								if (rel.other.state == 5) {
+									rel.other.stats.wantKids = false;
+									stats.wantKids = false;
+									GameObject.FindObjectOfType<Reproduction> ().reproduce (this, rel.other);
+									foreach (HumanLife person in stats.accomodation.occupants) {
+										person.stats.accomodation.requiredRooms++;
 									}
+									if (stats.accomodation.homeData.rooms.Count < stats.accomodation.requiredRooms) {
+										sellHome ();
+										foreach (HumanLife person in stats.accomodation.occupants) {
+											person.resetHome ();
+										}
+									}
+									break;
 								}
 							}
 						}

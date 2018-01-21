@@ -113,4 +113,10 @@ public class CurrentTime : MonoBehaviour {
 		hourPurchases[(int)CurrentHMS.x]++;
 	}
 
+	public void OnDrawGizmos() {
+		for (int a = 0; a < 23; a++) {
+			Gizmos.DrawLine(transform.position + new Vector3(-a, hourPurchases[a]/10, 0), transform.position + new Vector3(-a - 1, hourPurchases[a + 1]/10, 0));
+		}
+	}
+
 }

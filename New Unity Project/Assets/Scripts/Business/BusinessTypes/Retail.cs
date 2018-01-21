@@ -21,17 +21,19 @@ public class Retail : Business {
 				
 				for (int a = 0; a < occupations.Count; a++) {
 					if (occupations [a].delivery) {
-						deliveryInfo details = new deliveryInfo ();
-						details.items = new List<item> ();
-						details.items.Add (products [data.index].data);
-						details.recipient = data.buyer;
-						((Delivery)occupations [a]).deliveryJobs.Add (details);
+						if (occupations [a].open) {
+							deliveryInfo details = new deliveryInfo ();
+							details.items = new List<item> ();
+							details.items.Add (products [data.index].data);
+							details.recipient = data.buyer;
+							((Delivery)occupations [a]).deliveryJobs.Add (details);
 
-						data.buyer.cash -= products [data.index].cost;
-						data.buyer.waitingForDelivery++;
-						GameObject.FindObjectOfType<CurrentTime> ().addPurchase ();
+							data.buyer.cash -= products [data.index].cost;
+							data.buyer.waitingForDelivery++;
+							GameObject.FindObjectOfType<CurrentTime> ().addPurchase ();
 
-						return true;
+							return true;
+						}
 					}
 				}
 
@@ -110,5 +112,10 @@ public class Retail : Business {
 	protected override bool checkProduct (Product one)
 	{
 		return true;
+	}
+
+	protected override void dailyCheck (int day)
+	{
+		return;
 	}
 }

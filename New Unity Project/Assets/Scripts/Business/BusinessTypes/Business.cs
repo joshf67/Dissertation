@@ -6,6 +6,7 @@ public abstract class Business : MonoBehaviour {
 
 	public float cash;
 	public float rent;
+	public float rentDays;
 
 	public bool online;
 	//public List<HumanLife> customersOnline;
@@ -16,10 +17,18 @@ public abstract class Business : MonoBehaviour {
 	public List<Job> occupations;
 	public bool open;
 
+	float currentDay = 0;
+
 	// Update is called once per frame
 	void Update () {
 		//save current day
-		float currentDay = GameObject.FindObjectOfType<CurrentTime> ().CurrentDWMY.x;
+		if (currentDay != GameObject.FindObjectOfType<CurrentTime> ().CurrentDWMY.x) {
+			currentDay = GameObject.FindObjectOfType<CurrentTime> ().CurrentDWMY.x;
+			dailyCheck ((int)currentDay);
+			if (currentDay == rentDays) {
+				cash -= rent;
+			}
+		}
 
 		//loop through all jobs
 		foreach (Job job in occupations) {
@@ -174,6 +183,8 @@ public abstract class Business : MonoBehaviour {
 	}
 
 	protected abstract bool checkProduct(Product one);
+
+	protected abstract void dailyCheck(int day);
 	//==============IMPORTANT========================
 
 }
