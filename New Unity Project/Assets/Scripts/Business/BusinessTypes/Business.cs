@@ -65,14 +65,6 @@ public abstract class Business : MonoBehaviour {
 		return false;
 	}
 
-	public virtual bool charge(Product prod, HumanLife person) {
-		return false;
-	}
-
-	public virtual bool chargeDelivery(Product prod, HumanLife person) {
-		return false;
-	}
-
 	public bool testStats(Stats stat, Job jobDetail) {
 		if (stat.age >= jobDetail.requiredStats.age.x && stat.age < jobDetail.requiredStats.age.y) {
 			if (stat.intelligence >= jobDetail.requiredStats.intellegence) {
@@ -146,7 +138,14 @@ public abstract class Business : MonoBehaviour {
 		cash -= rent;
 	}
 
-	//IMPORTANT
+	//==============IMPORTANT========================
+	public virtual bool Buy(purchaseOptions data) {
+		return charge (data);
+	}
+
+	protected abstract bool charge (purchaseOptions data);
+
+
 	public virtual List<Product> searchProducts(shopTest data) {
 		List<Product> returnVal = searchForProduct (data);
 		if (returnVal == null) {
@@ -156,5 +155,25 @@ public abstract class Business : MonoBehaviour {
 	}
 
 	protected abstract List<Product> searchForProduct (shopTest data);
+	protected abstract void arrangeProduct (List<Product> data);
+
+	public virtual bool comparePrice(Product one, HumanLife person) {
+		return compareCost (one, person);
+	}
+
+	protected abstract bool compareCost(Product one, HumanLife person);
+
+	public virtual bool compareProduct(Product one, HumanLife person) {
+		return compare (one, person);
+	}
+
+	protected abstract bool compare(Product one, HumanLife person);
+
+	public virtual bool testProduct(Product one) {
+		return checkProduct (one);
+	}
+
+	protected abstract bool checkProduct(Product one);
+	//==============IMPORTANT========================
 
 }

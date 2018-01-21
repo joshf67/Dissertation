@@ -76,13 +76,11 @@ public struct deliveryInfo {
 public struct shopTest {
 	public itemTypes productType;
 	public string productName;
-	public float cash;
 	public HumanLife person;
 
-	public shopTest (itemTypes type = 0, string name = "", float money = 0, HumanLife life = null) {
+	public shopTest (itemTypes type = 0, string name = "", HumanLife life = null) {
 		productType = type;
 		productName = name;
-		cash = money;
 		person = life;
 	}
 }
@@ -90,9 +88,26 @@ public struct shopTest {
 [System.Serializable]
 public struct item {
 
-	public int itemType;
+	public itemTypes itemType;
 	public string name;
 	public float effect;
+
+}
+
+[System.Serializable]
+public struct purchaseOptions {
+
+	public int index;
+	public bool delivery;
+	public bool online;
+	public HumanLife buyer;
+
+	public purchaseOptions (int _index = 0, bool _delivery = false, bool _online = false, HumanLife _buyer = null) {
+		index = _index;
+		online = _online;
+		delivery = _delivery;
+		buyer = _buyer;
+	}
 
 }
 

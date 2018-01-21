@@ -8,12 +8,13 @@ public class HumanLife : MonoBehaviour {
 	public CurrentTime time;
 	public NavMeshAgent agent;
 
-	public GameObject shop;
 	public GameObject entertainment;
 
 	public List<Job> jobApplications;
 	public List<Product> onSale;
 	public List<Business> ignoreForCurrent;
+	//public Business lastIgnore;
+	public Business currentBusiness;
 	public itemTypes lastItemSearchedFor;
 	public string lastItemNameSearchFor;
 
@@ -43,6 +44,9 @@ public class HumanLife : MonoBehaviour {
 	public float timeWorking;
 
 	public int waitingForDelivery;
+
+	public int tick = 0;
+	public int lastShopTick = 0;
 
 	public int state = 0;
 
@@ -80,7 +84,7 @@ public class HumanLife : MonoBehaviour {
 			eatFood ();
 			break;
 		case 2:
-			Entertainment ();
+			gatherEnergy ();
 			break;
 		case 3:
 			Sleep ();
@@ -88,8 +92,13 @@ public class HumanLife : MonoBehaviour {
 		case 4:
 			GoHome ();
 			break;
+		case 5:
+			Entertainment ();
+			break;
 		}
+
 		checkTime ();
+		tick++;
 
         if (state == 3)
         {
@@ -121,7 +130,16 @@ public class HumanLife : MonoBehaviour {
 			if (testTime (stats.job.hours.workHours.x - stats.travelHours, stats.job.hours.workHours.y)) {
 
 				if (food >= maxFood / 10) {
-					state = 0;
+					if (energy >= maxEnergy / 10) {
+						state = 0;
+					} else {
+						if (testTime (stats.job.hours.breakTime.x, stats.job.hours.breakTime.y)) {
+							//gather energy
+							state = 2;
+						} else {
+							state = 0;
+						}
+					}
 				} else {
 					if (testTime (stats.job.hours.breakTime.x, stats.job.hours.breakTime.y)) {
 						//grab food
@@ -149,14 +167,17 @@ public class HumanLife : MonoBehaviour {
 
 		}
 
-		//Shop needs a function
-
 		//entertainment needs a function
 
 		//go home
 		if (food >= maxFood / 10) {
-			state = 4;
-			return;
+			if (energy >= maxEnergy / 10) {
+				state = 4;
+				return;
+			} else {
+				state = 2;
+				return;
+			}
 		} else {
 			//grab food
 			state = 1;
@@ -262,50 +283,8 @@ public class HumanLife : MonoBehaviour {
 	}
 
 	bool FindHome() {
-		List<House> availableHomes = new List<House>();
-		float availableCash = 0;
-
-		foreach (HumanLife person in stats.accomodation.occupants) {
-			availableCash += person.incomePerMonth;
-		}
-		availableCash /= 2;
-
-		foreach (Housing houses in GameObject.FindObjectsOfType<Housing>()) {
-			foreach (HousingProduct potentialHome in houses.searchProducts(new shopTest(itemTypes.houses, "house", availableCash, this))) {
-				availableHomes.Add (potentialHome.data);
-			}
-		}
-
-		bool more = false;
-		do {
-			more = false;
-			for (int a = 0; a < availableHomes.Count - 1; a++) {
-				float distance = 0;
-				float distanceToNext = 0;
-				foreach (HumanLife person in stats.accomodation.occupants) {
-					if (person.stats.job) {
-						distance += Vector3.Distance (person.stats.job.transform.position, availableHomes [a].position);
-						distanceToNext += Vector3.Distance (person.stats.job.transform.position, availableHomes [a + 1].position);
-					}
-				}
-				if (availableHomes [a].cost + distance > availableHomes [a + 1].cost + distanceToNext) {
-					House tempHouse = availableHomes [a];
-					availableHomes [a] = availableHomes [a + 1];
-					availableHomes [a + 1] = tempHouse;
-					more = true;
-				}
-			}
-		} while (more);
-
-		if (availableHomes.Count != 0) {
-			foreach (HumanLife person in stats.accomodation.occupants) {
-				person.stats.accomodation.homeData = availableHomes [0].ownerScript.houses[availableHomes[0].ownerScriptIndex].data;
-				person.stats.accomodation.home = person.stats.accomodation.homeData.obj;
-			}
-			stats.accomodation.homeData.occupants = stats.accomodation.occupants;
-			return true;
-		}
-		return false;
+		Shop(itemTypes.houses);
+		return (stats.accomodation.homeData != null);
 	}
 
 	void Work() {
@@ -332,7 +311,7 @@ public class HumanLife : MonoBehaviour {
 		timeWorking = 0;
 	}
 
-	Business findClosestStore(itemTypes itemTypeRequired, string itemNameRequired = "", float totalCash = 0, List<Business> ignore = null) {
+	Business findClosestStore(itemTypes itemTypeRequired, string itemNameRequired = "", List<Business> ignore = null) {
 		Business[] all = GameObject.FindObjectsOfType<Business> ();
 		Business closest = null;
 		float distance = Mathf.Infinity;
@@ -343,14 +322,16 @@ public class HumanLife : MonoBehaviour {
 				}
 			}
 			if (bus.open) {
-				List<Product> tempProducts = bus.searchProducts (new shopTest(itemTypeRequired, itemNameRequired, cash, this));
+				List<Product> tempProducts = bus.searchProducts (new shopTest(itemTypeRequired, itemNameRequired, this));
 				if (tempProducts != null) {
-					if (Vector3.Distance (transform.position, bus.transform.position) < distance) {
-						distance = Vector3.Distance (transform.position, bus.transform.position);
-						closest = bus;
-						onSale.Clear ();
-						foreach (Product prod in tempProducts) {
-							onSale.Add (prod);
+					if (tempProducts.Count != 0) {
+						if (Vector3.Distance (transform.position, bus.transform.position) < distance) {
+							distance = Vector3.Distance (transform.position, bus.transform.position);
+							closest = bus;
+							onSale.Clear ();
+							foreach (Product prod in tempProducts) {
+								onSale.Add (prod);
+							}
 						}
 					}
 				}
@@ -359,81 +340,69 @@ public class HumanLife : MonoBehaviour {
 		return closest;
 	}
 
-	void arrangeBasedOnAffect(List<Product> products) {
-		bool more = false;
-		do {
-			more = false;
-			for (int a = 0; a < products.Count - 1; a++) {
-				if (((ItemProduct)products [a]).data.effect < ((ItemProduct)products [a + 1]).data.effect) {
-					Product tempProduct = products [a];
-					products [a] = products [a + 1];
-					products [a + 1] = tempProduct;
-					more = true;
-				}
-			}
-		} while (more);
-	}
-
-	//try to buy item from business
-	bool buyItem(Business shopBussiness, Product prod, bool delivery) {
-		//TEMP DELIVERY TEST REMOVE LATER
-		if (delivery) {
-			//check if person can afford item
-			if (shopBussiness.chargeDelivery (prod, this)) {
-				waitingForDelivery++;
-				return true;
-			}
-		} else {
-			//check if person can afford item
-			if (shopBussiness.charge (prod, this)) {
-				//add item to inventory (temp)
-				inventory.Add (((ItemProduct)prod).data);
-				return true;
+	int lookForItem(itemTypes item) {
+		for (int a = 0; a < inventory.Count; a++) {
+			if (inventory [a].itemType == item) {
+				return a;
 			}
 		}
-		return false;
+		return -1;
 	}
 
 	void eatFood() {
-		for (int a = 0; a < inventory.Count; a++) {
-			if (string.Equals (inventory[a].name, "food", System.StringComparison.OrdinalIgnoreCase)) {
-				food += inventory [a].effect;
-				inventory.RemoveAt (a);
-				return;
+		int index = lookForItem (itemTypes.food);
+		if (index != -1) {
+			food += inventory [index].effect;
+			inventory.RemoveAt (index);
+			return;
+		} else {
+			if (waitingForDelivery == 0) {
+				Shop (itemTypes.food, "", true, true);
 			}
-		}
-		if (waitingForDelivery == 0) {
-			Shop (itemTypes.food, "food", cash, maxFood, food);
 		}
 	}
 
-	void testShop (Business shopBusiness, float maxValue = -1, float currentValue = -1, bool delivery = false) {
-		//arrange items based on effects (highest first)
-		arrangeBasedOnAffect (onSale);
+	void gatherEnergy() {
+		int index = lookForItem (itemTypes.energy);
+		if (index != -1) {
+			energy += inventory [index].effect;
+			inventory.RemoveAt (index);
+			return;
+		} else {
+			if (waitingForDelivery == 0) {
+				Shop (itemTypes.energy, "", true, true);
+			}
+		}
+	}
+
+	bool testShop (Business shopBusiness, bool compareProductValue = false, bool delivery = false, bool online = false) {
 		//loop through all possible products
 		for (int a = 0; a < onSale.Count; a++) {
 
-			//check if person can afford item
-			if (cash >= onSale [a].cost) {
+			//test if the product is still available
+			if (shopBusiness.testProduct (onSale [a])) {
 
 				//test if the item refills under the food required
-				if ((maxValue - currentValue > ((ItemProduct)onSale [a]).data.effect) || maxValue == -1) {
+				if (!compareProductValue || shopBusiness.compareProduct (onSale [a], this)) {
+								
 					//check if the person can buy the first item (best effect)
 					if (a == 0) {
-						if (buyItem (shopBusiness, onSale [0], delivery)) {
-							return;
+						if (shopBusiness.Buy (new purchaseOptions (onSale [a].index, delivery, online, this))) {
+							return true;
 						}
+
 					} else {
+								
 						//check if previous item is better with relativly same cost
-						if (onSale [a - 1].cost < onSale [a].cost * 1.5f) {
-							if (buyItem (shopBusiness, onSale [a], delivery)) {
-								return;
+						if (onSale [a - 1].cost < onSale [a].cost * 1.5f && shopBusiness.testProduct (onSale [a - 1])) {
+							if (shopBusiness.Buy (new purchaseOptions (onSale [a - 1].index, delivery, online, this))) {
+								return true;
 							}
-						} else {
-							//if previous item is not better then buy current
-							if (buyItem (shopBusiness, onSale [a], delivery)) {
-								return;
-							}
+						} 
+
+						//if previous item is not better then buy current
+						if (shopBusiness.Buy (new purchaseOptions (onSale [a].index, delivery, online, this))) {
+							return true;
 						}
 					}
 				}
@@ -441,90 +410,55 @@ public class HumanLife : MonoBehaviour {
 		}
 		//add business to ignore list due to not having item
 		ignoreForCurrent.Add (shopBusiness);
-		shop = null;
+		return false;
 	}
+		
 
-	void Shop(itemTypes itemType, string itemName = "", float totalCash = 0, float maxValue = -1, float currentValue = -1) {
+	void Shop(itemTypes itemType, string itemName = "", bool compareProductValue = false, bool attemptDelivery = false) {
 		//check if search for new item, if so remove ignore list
 		if (lastItemSearchedFor != itemType || lastItemNameSearchFor != itemName) {
 			ignoreForCurrent.Clear ();
 		}
+
+		//check if last shop check was longer than 1 tick if so reset shop options
+		if (tick - lastShopTick > 1) {
+			ignoreForCurrent.Clear ();
+			currentBusiness = null;
+		}
+
+		lastShopTick = tick;
 		lastItemSearchedFor = itemType;
 		lastItemNameSearchFor = itemName;
 
-		if (shop) {
+		if (currentBusiness) {
 			//check if shop is open
-			Business shopBusiness = shop.GetComponent<Business> ();
-			if (shopBusiness.open) {
+			if (currentBusiness.open) {
 				//TEMP DELIVERY TEST CHANGE LATER
-				if (shopBusiness.online) {
-					testShop (shopBusiness, maxValue, currentValue, true);
-				} else {
-					//check if person is within range of business
-					if (Functions.checkDistanceBusiness (this, agent, shopBusiness, shop.transform.position, minDist)) {
-						testShop (shopBusiness, maxValue, currentValue, false);
-					}
-				}
-			}
-		} else {
-			Business tempShop = findClosestStore (itemType, itemName, totalCash, ignoreForCurrent);
-			if (tempShop != null) {
-				shop = tempShop.gameObject;
-			}
-		}
-	}
-
-	/*
-	void Shop() {
-		if (shop && shop.GetComponent<Business> ().open) {
-			if (Vector3.Distance (agent.destination, shop.transform.position) > minDist) {
-				agent.SetDestination (shop.transform.position);
-			} else {
-				if (Vector3.Distance (transform.position, shop.transform.position) < minDist) {
-					if (food < maxFood) {
-						if (onSale.Count == 0) {
-							if (shop.GetComponent<Business> ().charge (onSale [0], this)) {
-								food += onSale [0].data.effect;
+				if (currentBusiness.online && attemptDelivery) {
+					if (!testShop (currentBusiness, compareProductValue, true, true)) {
+						if (currentBusiness.inStore) {
+							if (Functions.checkDistanceBusiness (this, agent, currentBusiness, currentBusiness.transform.position, minDist)) {
+								testShop (currentBusiness, compareProductValue, false, false);
+								currentBusiness = null;
 							}
 						} else {
-							arrangeBasedOnAffect (onSale);
-							for (int a = 0; a < onSale.Count; a++) {
-								if (cash >= onSale [a].cost) {
-									if (maxFood - food > onSale [a].data.effect) {
-										if (a == 0) {
-											if (shop.GetComponent<Business> ().charge (onSale [a], this)) {
-												food += onSale [a].data.effect;
-												return;
-											}
-										} else {
-											if (onSale [a - 1].cost < onSale [a].cost * 1.5f) {
-												if (shop.GetComponent<Business> ().charge (onSale [a - 1], this)) {
-													food += onSale [a].data.effect;
-													return;
-												}
-											} else {
-												if (shop.GetComponent<Business> ().charge (onSale [a], this)) {
-													food += onSale [a].data.effect;
-													return;
-												}
-											}
-										}
-									}
-								} else {
-									if (a == onSale.Count) {
-										shop = findClosestStore (0,"",shop.GetComponent<Business> ()).gameObject;
-									}
-								}
-							}
+							currentBusiness = null;
 						}
+					} else {
+						currentBusiness = null;
+					}
+				} else {
+					//check if person is within range of business
+					if (Functions.checkDistanceBusiness (this, agent, currentBusiness, currentBusiness.transform.position, minDist)) {
+						testShop (currentBusiness, compareProductValue, false, false);
+						currentBusiness = null;
 					}
 				}
 			}
 		} else {
-			shop = findClosestStore (0).gameObject;
+			currentBusiness = findClosestStore (itemType, itemName, ignoreForCurrent);
 		}
 	}
-	*/
 
 	void Entertainment() {
 		if (Functions.checkDistance (agent, entertainment.transform.position,minDist)) {
@@ -533,26 +467,6 @@ public class HumanLife : MonoBehaviour {
 			}
 		}
 	}
-
-	/*
-	bool checkDistance(Vector3 destination, float distance) {
-		if (Vector3.Distance (transform.position, destination) > distance) {
-			agent.SetDestination (destination);
-			return false;
-		}
-		return true;
-	}
-
-	bool checkDistanceBusiness(Business business, Vector3 destination, float distance) {
-		if (Vector3.Distance (transform.position, destination) > distance) {
-			if (!(business.online && accessToInternet)) {
-				agent.SetDestination (destination);
-				return false;
-			}
-		}
-		return true;
-	}
-	*/
 
 	public void recalculateSleep() {
 		stats.sleepHours.y = stats.job.hours.workHours.x - stats.travelHours;

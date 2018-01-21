@@ -7,9 +7,10 @@ public class Product : MonoBehaviour {
 	public string name;
 	public float cost;
 	public itemTypes type;
+	public int index;
 
 }
 
 public enum itemTypes {
-	food, houses
+	none, food, hunger, energy, happiness, houses
 };
