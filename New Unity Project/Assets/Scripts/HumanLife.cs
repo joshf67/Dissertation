@@ -228,7 +228,6 @@ public class HumanLife : MonoBehaviour {
 		} else {
 			if (!FindHome ()) {
 				Debug.Log ("IM HOMELESS");
-				Debug.Log (agent.destination);
 			}
 		}
 	}
@@ -467,6 +466,9 @@ public class HumanLife : MonoBehaviour {
 
 	public void recalculateSleep() {
 		stats.sleepHours.y = stats.job.hours.workHours.x - stats.travelHours;
+		if (stats.sleepHours.y < 0) {
+			stats.sleepHours.y = 24 + stats.sleepHours.y;
+		}
 		if (stats.sleepHours.y - 8 < 0) {
 			stats.sleepHours.x = 24 - (8 - stats.sleepHours.y);
 		} else {

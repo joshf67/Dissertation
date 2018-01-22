@@ -6,6 +6,9 @@ public class Housing : Business {
 	public List<HousingProduct> houses;
 
 	void Start() {
+		foreach(HousingProduct prod in gameObject.GetComponentsInChildren<HousingProduct>()) {
+			houses.Add (prod);
+		}
 		for(int a = 0; a < houses.Count; a++) {
 			houses[a].data.position = transform.position;
 			houses [a].data.obj = gameObject;
@@ -26,6 +29,7 @@ public class Housing : Business {
 				data.buyer.stats.accomodation.occupants [a].stats.accomodation.homeData = houses [data.index].data;
 				data.buyer.stats.accomodation.occupants [a].stats.accomodation.home = houses [data.index].gameObject;
 			}
+			cash += houses [data.index].data.initialCost;
 			return true;
 		}
 		return false;
@@ -95,13 +99,16 @@ public class Housing : Business {
 		return (houses [one.index].data.occupants.Count == 0);
 	}
 
-	protected override void dailyCheck (int day)
+	protected override void dailyCheck (Vector3 currentDate)
 	{
 		for (int a = 0; a < houses.Count; a++) {
-			if (houses [a].data.costDays == day) {
+			if (houses [a].data.costDays == currentDate) {
 				houses [a].data.paymentMade = true;
-				for (int b = 0; b < houses [a].data.occupants.Count; a++) {
-					houses [a].data.occupants [b].cash -= houses [a].data.cost / houses [a].data.occupants.Count;
+				if (houses [a].data.occupants != null) {
+					for (int b = 0; b < houses [a].data.occupants.Count; a++) {
+						houses [a].data.occupants [b].cash -= houses [a].data.cost / houses [a].data.occupants.Count;
+					}
+					cash += houses [a].data.cost;
 				}
 			} else {
 				houses [a].data.paymentMade = false;

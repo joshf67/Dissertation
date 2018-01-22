@@ -44,9 +44,11 @@ public class CurrentTime : MonoBehaviour {
 			foreach (HumanLife person in GameObject.FindObjectsOfType<HumanLife>()) {
 				person.updateAge ();
 			}
+			/*
 			foreach (Business buss in GameObject.FindObjectsOfType<Business>()) {
 				buss.payCosts ();
 			}
+			*/
 		}
 
 		//months
@@ -114,8 +116,18 @@ public class CurrentTime : MonoBehaviour {
 	}
 
 	public void OnDrawGizmos() {
+		float highest = 0;
+		foreach (int i in hourPurchases) {
+			if (i > highest) {
+				highest = i;
+			}
+		}
+		if (highest == 0) {
+			highest = 1;
+		}
+		Gizmos.DrawLine(transform.position, transform.position + new Vector3(0, hourPurchases[0]/highest, 0));
 		for (int a = 0; a < 23; a++) {
-			Gizmos.DrawLine(transform.position + new Vector3(-a, hourPurchases[a]/10, 0), transform.position + new Vector3(-a - 1, hourPurchases[a + 1]/10, 0));
+			Gizmos.DrawLine(transform.position + new Vector3(-a, hourPurchases[a]/highest, 0), transform.position + new Vector3(-a - 1, hourPurchases[a + 1]/highest, 0));
 		}
 	}
 

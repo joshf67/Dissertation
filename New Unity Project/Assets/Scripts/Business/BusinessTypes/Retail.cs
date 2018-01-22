@@ -7,6 +7,9 @@ public class Retail : Business {
 	public List<ItemProduct> products;
 
 	void Start() {
+		foreach(ItemProduct prod in gameObject.GetComponents<ItemProduct>()) {
+			products.Add (prod);
+		}
 		for(int a = 0; a < products.Count; a++) {
 			products [a].index = a;
 		}
@@ -32,6 +35,7 @@ public class Retail : Business {
 							data.buyer.waitingForDelivery++;
 							GameObject.FindObjectOfType<CurrentTime> ().addPurchase ();
 
+							cash += products [data.index].cost;
 							return true;
 						}
 					}
@@ -41,6 +45,7 @@ public class Retail : Business {
 				data.buyer.cash -= products [data.index].cost;
 				data.buyer.inventory.Add(products [data.index].data);
 				GameObject.FindObjectOfType<CurrentTime> ().addPurchase ();
+				cash += products [data.index].cost;
 				return true;
 			}
 
@@ -114,7 +119,7 @@ public class Retail : Business {
 		return true;
 	}
 
-	protected override void dailyCheck (int day)
+	protected override void dailyCheck (Vector3 currentDate)
 	{
 		return;
 	}

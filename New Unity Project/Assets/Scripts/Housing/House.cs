@@ -9,7 +9,7 @@ public class House : MonoBehaviour {
 
 	public float cost;
 	public float initialCost;
-	public int costDays;
+	public Vector3 costDays;
 	public bool paymentMade;
 
 	public Vector3 position;

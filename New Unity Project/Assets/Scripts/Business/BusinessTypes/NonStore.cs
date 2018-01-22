@@ -33,7 +33,7 @@ public class NonStore : Business {
 		return false;
 	}
 
-	protected override void dailyCheck (int day)
+	protected override void dailyCheck (Vector3 currentDate)
 	{
 		return;
 	}

@@ -36,12 +36,14 @@ public class Delivery : Job {
 			}
 		} else {
 			if (deliveryJobs.Count > 0) {
-				workerStats.deliveryItems = deliveryJobs [0].items;
-				workerStats.recipient = deliveryJobs [0].recipient;
-				workerStats.destination = deliveryJobs [0].recipient.transform.position;
-				workerStats.deliveryToBeMade = true;
-				workerStats.ignoreDistance = true;
-				workerStats.startDeliveryTime = 0;
+				if (deliveryJobs [0].recipient) {
+					workerStats.deliveryItems = deliveryJobs [0].items;
+					workerStats.recipient = deliveryJobs [0].recipient;
+					workerStats.destination = deliveryJobs [0].recipient.transform.position;
+					workerStats.deliveryToBeMade = true;
+					workerStats.ignoreDistance = true;
+					workerStats.startDeliveryTime = 0;
+				}
 				deliveryJobs.RemoveAt (0);
 			}
 		}

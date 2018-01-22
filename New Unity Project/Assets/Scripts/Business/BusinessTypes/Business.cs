@@ -19,12 +19,20 @@ public abstract class Business : MonoBehaviour {
 
 	float currentDay = 0;
 
+	bool firstTick = true;
+
 	// Update is called once per frame
 	void Update () {
+		if (firstTick) {
+			firstTick = false;
+			foreach (Job job in gameObject.GetComponents<Job> ()) {
+				occupations.Add (job);
+			}
+		}
 		//save current day
 		if (currentDay != GameObject.FindObjectOfType<CurrentTime> ().CurrentDWMY.x) {
 			currentDay = GameObject.FindObjectOfType<CurrentTime> ().CurrentDWMY.x;
-			dailyCheck ((int)currentDay);
+			dailyCheck (GameObject.FindObjectOfType<CurrentTime> ().CurrentDWMY);
 			if (currentDay == rentDays) {
 				cash -= rent;
 			}
@@ -184,7 +192,7 @@ public abstract class Business : MonoBehaviour {
 
 	protected abstract bool checkProduct(Product one);
 
-	protected abstract void dailyCheck(int day);
+	protected abstract void dailyCheck(Vector3 currentDate);
 	//==============IMPORTANT========================
 
 }

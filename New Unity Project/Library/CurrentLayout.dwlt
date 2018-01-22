@@ -20,7 +20,7 @@ MonoBehaviour:
   m_ShowMode: 4
   m_Title: 
   m_RootView: {fileID: 6}
-  m_MinSize: {x: 950, y: 542}
+  m_MinSize: {x: 950, y: 300}
   m_MaxSize: {x: 10000, y: 10000}
 --- !u!114 &2
 MonoBehaviour:
@@ -40,8 +40,8 @@ MonoBehaviour:
     y: 0
     width: 461
     height: 947
-  m_MinSize: {x: 275, y: 50}
-  m_MaxSize: {x: 4000, y: 4000}
+  m_MinSize: {x: 277, y: 71}
+  m_MaxSize: {x: 4002, y: 4021}
   m_ActualView: {fileID: 14}
   m_Panes:
   - {fileID: 14}
@@ -67,8 +67,8 @@ MonoBehaviour:
     y: 30
     width: 1920
     height: 947
-  m_MinSize: {x: 679, y: 492}
-  m_MaxSize: {x: 14002, y: 14042}
+  m_MinSize: {x: 683, y: 342}
+  m_MaxSize: {x: 12008, y: 8042}
   vertical: 0
   controlID: 9
 --- !u!114 &4
@@ -114,14 +114,14 @@ MonoBehaviour:
     y: 573
     width: 1459
     height: 374
-  m_MinSize: {x: 232, y: 271}
-  m_MaxSize: {x: 10002, y: 10021}
-  m_ActualView: {fileID: 13}
+  m_MinSize: {x: 102, y: 121}
+  m_MaxSize: {x: 4002, y: 4021}
+  m_ActualView: {fileID: 18}
   m_Panes:
   - {fileID: 13}
   - {fileID: 18}
-  m_Selected: 0
-  m_LastSelected: 1
+  m_Selected: 1
+  m_LastSelected: 0
 --- !u!114 &6
 MonoBehaviour:
   m_ObjectHideFlags: 52
@@ -206,8 +206,8 @@ MonoBehaviour:
     y: 0
     width: 1459
     height: 947
-  m_MinSize: {x: 404, y: 492}
-  m_MaxSize: {x: 10002, y: 14042}
+  m_MinSize: {x: 406, y: 342}
+  m_MaxSize: {x: 8006, y: 8042}
   vertical: 1
   controlID: 10
 --- !u!114 &10
@@ -230,8 +230,8 @@ MonoBehaviour:
     y: 0
     width: 1459
     height: 573
-  m_MinSize: {x: 404, y: 221}
-  m_MaxSize: {x: 8004, y: 4021}
+  m_MinSize: {x: 406, y: 221}
+  m_MaxSize: {x: 8006, y: 4021}
   vertical: 0
   controlID: 11
 --- !u!114 &11
@@ -324,19 +324,19 @@ MonoBehaviour:
     m_ShowAllHits: 0
     m_SearchArea: 0
     m_Folders:
-    - Assets/Scripts/Business/Products
+    - Assets
   m_ViewMode: 1
   m_StartGridSize: 64
   m_LastFolders:
-  - Assets/Scripts/Business/Products
+  - Assets
   m_LastFoldersGridSize: -1
-  m_LastProjectPath: C:\Users\Josh Fenlon\Desktop\Git\Dissertation\New Unity Project
+  m_LastProjectPath: D:\Desktop\Git\Dissertation\New Unity Project
   m_IsLocked: 0
   m_FolderTreeState:
     scrollPos: {x: 0, y: 0}
-    m_SelectedIDs: 98260000
-    m_LastClickedID: 9880
-    m_ExpandedIDs: 00000000242600007a2600009426000000ca9a3bffffff7f
+    m_SelectedIDs: e0240000
+    m_LastClickedID: 9440
+    m_ExpandedIDs: 00000000e0240000622500009e250000
     m_RenameOverlay:
       m_UserAcceptedRename: 0
       m_Name: 
@@ -364,7 +364,7 @@ MonoBehaviour:
     scrollPos: {x: 0, y: 0}
     m_SelectedIDs: 
     m_LastClickedID: 0
-    m_ExpandedIDs: 00000000242600007a26000094260000
+    m_ExpandedIDs: 00000000e0240000622500009e250000
     m_RenameOverlay:
       m_UserAcceptedRename: 0
       m_Name: 
@@ -389,9 +389,9 @@ MonoBehaviour:
       m_Icon: {fileID: 0}
       m_ResourceFile: 
   m_ListAreaState:
-    m_SelectedInstanceIDs: 
-    m_LastClickedInstanceID: 0
-    m_HadKeyboardFocusLastEvent: 0
+    m_SelectedInstanceIDs: 7e270000
+    m_LastClickedInstanceID: 10110
+    m_HadKeyboardFocusLastEvent: 1
     m_ExpandedInstanceIDs: c6230000
     m_RenameOverlay:
       m_UserAcceptedRename: 0
@@ -479,24 +479,24 @@ MonoBehaviour:
     width: 504
     height: 552
   m_TreeViewState:
-    scrollPos: {x: 0, y: 201}
+    scrollPos: {x: 0, y: 329}
     m_SelectedIDs: 
     m_LastClickedID: 0
-    m_ExpandedIDs: 9cfbffff000000009a2700003e290000d4290000
+    m_ExpandedIDs: e8fbffff000000000027000072270000ec28000070290000
     m_RenameOverlay:
       m_UserAcceptedRename: 0
-      m_Name: Male (5)
-      m_OriginalName: Male (5)
+      m_Name: Male (14)
+      m_OriginalName: Male (14)
       m_EditFieldRect:
         serializedVersion: 2
         x: 0
         y: 0
         width: 0
         height: 0
-      m_UserData: -759636
+      m_UserData: -795826
       m_IsWaitingForDelay: 0
       m_IsRenaming: 0
-      m_OriginalEventType: 4
+      m_OriginalEventType: 0
       m_IsRenamingFilename: 0
       m_ClientGUIView: {fileID: 4}
     m_SearchString: 
@@ -532,14 +532,14 @@ MonoBehaviour:
     width: 949
     height: 552
   m_SceneLighting: 0
-  lastFramingTime: 5291.10636839717
+  lastFramingTime: 1959.4145144837335
   m_2DMode: 0
   m_isRotationLocked: 0
   m_AudioPlay: 0
   m_Position:
-    m_Target: {x: 8.797584, y: 5.8546877, z: 11.836608}
+    m_Target: {x: 4.0538445, y: -4.102623, z: 14.827926}
     speed: 2
-    m_Value: {x: 8.797584, y: 5.8546877, z: 11.836608}
+    m_Value: {x: 4.0538445, y: -4.102623, z: 14.827926}
   m_RenderMode: 0
   m_ValidateTrueMetals: 0
   m_SceneViewState:
@@ -562,13 +562,13 @@ MonoBehaviour:
       speed: 2
       m_Value: 0
   m_Rotation:
-    m_Target: {x: -0.15474509, y: 0.67681503, z: -0.14873588, w: -0.7041684}
+    m_Target: {x: -0.1528517, y: 0.69018984, z: -0.15276091, w: -0.69060737}
     speed: 2
-    m_Value: {x: -0.15474509, y: 0.67681503, z: -0.14873588, w: -0.7041684}
+    m_Value: {x: -0.1528517, y: 0.69018984, z: -0.15276091, w: -0.69060737}
   m_Size:
-    m_Target: 1.7500899
+    m_Target: 41.32758
     speed: 2
-    m_Value: 1.7500899
+    m_Value: 41.32758
   m_Ortho:
     m_Target: 0
     speed: 2
