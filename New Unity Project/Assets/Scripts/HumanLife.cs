@@ -74,6 +74,7 @@ public class HumanLife : MonoBehaviour {
 
 		switch (state) {
 		case 0:
+			accessToInternet = false;
 			if (stats.job) {
 				Work ();
 			} else {
@@ -227,17 +228,18 @@ public class HumanLife : MonoBehaviour {
 			}
 		} else {
 			if (!FindHome ()) {
-				Debug.Log ("IM HOMELESS");
 			}
 		}
 	}
 
 	void GoHome() {
 		if (stats.accomodation.home) {
-			if (Functions.checkDistance(agent, stats.accomodation.home.transform.position, minDist)) {
-					if (energy < maxEnergy) {
-						energy += (Time.deltaTime * time.timeMult) / 2;
-					}
+			if (Functions.checkDistance (agent, stats.accomodation.home.transform.position, minDist)) {
+				accessToInternet = true;
+				if (energy < maxEnergy) {
+					energy += (Time.deltaTime * time.timeMult) / 2;
+				}
+				/*
 				if (stats.wantKids) {
 					foreach (relation rel in stats.relationship) {
 						if (rel.relationType == 0) {
@@ -261,10 +263,10 @@ public class HumanLife : MonoBehaviour {
 						}
 					}
 				}
+				*/
 			}
 		} else {
 			if (!FindHome ()) {
-				Debug.Log ("IM HOMELESS");
 			}
 		}
 	}
@@ -353,7 +355,7 @@ public class HumanLife : MonoBehaviour {
 			return;
 		} else {
 			if (waitingForDelivery == 0) {
-				Shop (itemTypes.food, "", true, true);
+				Shop (itemTypes.food, "", false, true);
 			}
 		}
 	}

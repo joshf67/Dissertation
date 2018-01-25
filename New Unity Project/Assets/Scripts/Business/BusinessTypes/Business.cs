@@ -37,6 +37,9 @@ public abstract class Business : MonoBehaviour {
 				cash -= rent;
 			}
 		}
+		if (cash <= 0) {
+			GameObject.Destroy (gameObject);
+		}
 
 		//loop through all jobs
 		foreach (Job job in occupations) {

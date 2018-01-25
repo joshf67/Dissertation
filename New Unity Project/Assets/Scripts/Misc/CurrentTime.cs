@@ -5,10 +5,11 @@ using UnityEngine.UI;
 
 public class CurrentTime : MonoBehaviour {
 
-	public Vector3 DWM;
+	public Vector3 DWM = new Vector3(7,4,12);
 	public Vector4 CurrentDWMY;
-	public Vector3 HMS;
-	public float timeMult;
+	public Vector3 HMS = new Vector3(60,60,24);
+	public float timeMult = 1;
+	public float speed = 1;
 	public Vector2 CurrentHMS;
 	public float currentTime;
 	public Text text;
@@ -17,6 +18,7 @@ public class CurrentTime : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
+		Time.timeScale = speed;
 		currentTime += Time.deltaTime * timeMult;
 		//seconds
 		while (currentTime >= HMS.z) {
@@ -44,11 +46,6 @@ public class CurrentTime : MonoBehaviour {
 			foreach (HumanLife person in GameObject.FindObjectsOfType<HumanLife>()) {
 				person.updateAge ();
 			}
-			/*
-			foreach (Business buss in GameObject.FindObjectsOfType<Business>()) {
-				buss.payCosts ();
-			}
-			*/
 		}
 
 		//months
@@ -85,9 +82,7 @@ public class CurrentTime : MonoBehaviour {
 		if (CurrentHMS.y < 10) {
 			output += "0";
 		}
-
-
-
+			
 		output += CurrentHMS.y + ":";
 
 		if (currentTime < 10) {
