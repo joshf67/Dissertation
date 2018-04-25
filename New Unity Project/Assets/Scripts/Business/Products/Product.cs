@@ -12,5 +12,5 @@ public class Product : MonoBehaviour {
 }
 
 public enum itemTypes {
-	none, food, hunger, energy, happiness, houses
+	none, food, hunger, energy, happiness, houses, utilities
 };

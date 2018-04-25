@@ -17,6 +17,8 @@ public abstract class Business : MonoBehaviour {
 	public List<Job> occupations;
 	public bool open;
 
+	public GameObject buildingPosition;
+
 	float currentDay = 0;
 
 	bool firstTick = true;
@@ -55,6 +57,14 @@ public abstract class Business : MonoBehaviour {
 				job.paymentMade = false;
 			}
 
+			//test if workers are still alive
+			for (int a = 0; a < job.workers.Count; a++) {
+				if (job.workers [a].worker == null) {
+					job.workers.RemoveAt (a);
+					job.requiredWorkers++;
+				}
+			}
+
 			//check if business requires workers
 			if (job.requiredWorkers > 0) {
 				if (job.jobSearchTime <= 0) {
@@ -62,6 +72,7 @@ public abstract class Business : MonoBehaviour {
 						//test all current applications
 						testApplications (job);
 					}
+					job.jobSearchTime = job.jobSearchResetTime;
 				} else {
 					job.jobSearchTime -= Time.deltaTime;
 				}
@@ -98,12 +109,18 @@ public abstract class Business : MonoBehaviour {
 		return false;
 	}
 
-	void testApplications(Job job) {
+	void sortApplicationsBasedOnStats(Job job) {
 		//arrange based on total stats
+		int ops = 0;
 		bool more = false;
 		do {
+			more = false;
 			//loop through all applications
 			for (int a = 0; a < job.applications.Count - 1; a++) {
+
+				ops++;
+
+
 				//store stats
 				Stats currentStats = job.applications [a].stats;
 				Stats nextStats = job.applications [a + 1].stats;
@@ -115,11 +132,17 @@ public abstract class Business : MonoBehaviour {
 				if (currentStatsTotal < nextStatsTotal) {
 					HumanLife temp = job.applications [a + 1];
 					job.applications [a + 1] = job.applications [a];
-					job.applications [a + 1] = temp;
+					job.applications [a] = temp;
 					more = true;
 				}
 			}
 		} while (more);
+		bool pleaseWork = false;
+	}
+
+	void testApplications(Job job) {
+		//arrange based on total stats
+		sortApplicationsBasedOnStats (job);
 
 		//accept applications
 		for (int a = 0; a < job.applications.Count; a++) {
@@ -137,6 +160,9 @@ public abstract class Business : MonoBehaviour {
 			job.applications [0].recalculateSleep ();
 
 			job.applications [0].resetApplications ();
+
+			GameObject.FindObjectOfType<CurrentTime> ().addHours(job.hours.workHours);
+
 			job.requiredWorkers--;
 		}
 	}

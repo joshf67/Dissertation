@@ -13,8 +13,12 @@ public class CurrentTime : MonoBehaviour {
 	public Vector2 CurrentHMS;
 	public float currentTime;
 	public Text text;
+	public GUIStyle boxStyle;
+	public GUIStyle titleStyle;
+	public GUIStyle displayStyle;
 
 	public int[] hourPurchases = new int[24];
+	public int[] activeWorkHours = new int[24];
 	
 	// Update is called once per frame
 	void Update () {
@@ -110,6 +114,21 @@ public class CurrentTime : MonoBehaviour {
 		hourPurchases[(int)CurrentHMS.x]++;
 	}
 
+	public void addHours(Vector2 hours) {
+		if (hours.x < hours.y) {
+			for (int a = (int)hours.x; a < hours.y; a++) {
+				activeWorkHours [a]++;
+			}
+		} else {
+			for (int a = (int)hours.x; a < 24; a++) {
+				activeWorkHours [a]++;
+			}
+			for (int a = 0; a < hours.x; a++) {
+				activeWorkHours [a]++;
+			}
+		}
+	}
+
 	public void OnDrawGizmos() {
 		float highest = 0;
 		foreach (int i in hourPurchases) {
@@ -124,6 +143,63 @@ public class CurrentTime : MonoBehaviour {
 		for (int a = 0; a < 23; a++) {
 			Gizmos.DrawLine(transform.position + new Vector3(-a, hourPurchases[a]/highest, 0), transform.position + new Vector3(-a - 1, hourPurchases[a + 1]/highest, 0));
 		}
+
+		float highestHr = 0;
+		foreach (int i in activeWorkHours) {
+			if (i > highestHr) {
+				highestHr = i;
+			}
+		}
+		highestHr /= 8;
+		if (highestHr == 0) {
+			highestHr = 1;
+		}
+		Gizmos.DrawLine(transform.position - new Vector3(0, 10, 0), transform.position + new Vector3(0, activeWorkHours[0]/highestHr, 0) - new Vector3(0, 10, 0));
+		for (int a = 0; a < 23; a++) {
+			Gizmos.DrawLine(transform.position + new Vector3(-a, activeWorkHours[a]/highestHr, 0) - new Vector3(0, 10, 0), transform.position + new Vector3(-a - 1, activeWorkHours[a + 1]/highestHr, 0) - new Vector3(0, 10, 0));
+		}
+	}
+
+	void OnGUI() {
+		//display background
+		GUI.depth = 0;
+		GUI.Box (new Rect (new Vector2 (400, 0), new Vector2 (320, 140)), "", boxStyle); 
+
+		GUI.depth = 1;
+		GUI.Label(new Rect (new Vector2 (400, 5), new Vector2 (320, 140)), "Time Control", titleStyle); 
+
+		GUI.Label(new Rect (new Vector2 (460, 25), new Vector2 (320, 140)), "Time Mult: ", displayStyle); 
+
+		GUI.Label(new Rect (new Vector2 (485, 65), new Vector2 (320, 140)), timeMult.ToString(), displayStyle); 
+
+		if (GUI.Button (new Rect (new Vector2 (430, 100), new Vector2 (60, 30)), "Up")) {
+			if (timeMult < 120) {
+				timeMult += 6;
+			}
+		}
+
+		if (GUI.Button (new Rect (new Vector2 (490, 100), new Vector2 (60, 30)), "Down")) {
+			if (timeMult >= 6) {
+				timeMult -= 6;
+			}
+		}
+
+		GUI.Label(new Rect (new Vector2 (600, 25), new Vector2 (320, 140)), "Delta Mult: ", displayStyle); 
+
+		GUI.Label(new Rect (new Vector2 (625, 65), new Vector2 (320, 140)), speed.ToString(), displayStyle); 
+
+		if (GUI.Button (new Rect (new Vector2 (570, 100), new Vector2 (60, 30)), "Up")) {
+			if (speed < 100) {
+				speed += 5;
+			}
+		}
+
+		if (GUI.Button (new Rect (new Vector2 (630, 100), new Vector2 (60, 30)), "Down")) {
+			if (speed >= 5) {
+				speed -= 5;
+			}
+		}
+
 	}
 
 }

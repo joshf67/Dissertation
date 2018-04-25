@@ -5,9 +5,17 @@ using UnityEngine;
 public class Housing : Business {
 	public List<HousingProduct> houses;
 
+	public bool ownsAllHomes = false;
+
 	void Start() {
-		foreach(HousingProduct prod in gameObject.GetComponentsInChildren<HousingProduct>()) {
-			houses.Add (prod);
+		if (ownsAllHomes) {
+			foreach(HousingProduct prod in GameObject.FindObjectsOfType<HousingProduct>()) {
+				houses.Add (prod);
+			}
+		} else {
+			foreach (HousingProduct prod in gameObject.GetComponentsInChildren<HousingProduct>()) {
+				houses.Add (prod);
+			}
 		}
 		for(int a = 0; a < houses.Count; a++) {
 			houses[a].data.position = transform.position;

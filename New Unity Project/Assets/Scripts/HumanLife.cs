@@ -8,7 +8,7 @@ public class HumanLife : MonoBehaviour {
 	public CurrentTime time;
 	public NavMeshAgent agent;
 
-	public GameObject entertainment;
+	public CalorieBurnTable calorieBurnLookup;
 
 	public List<Job> jobApplications;
 	public List<Product> onSale;
@@ -32,16 +32,17 @@ public class HumanLife : MonoBehaviour {
 	public float maxEnergy;
 	public float maxHappiness;
 
+	public float targetFoodLevel;
+	public float minimumFoodLevel;
 	public float food;
 	public float energy;
 	public float happiness;
 
-	public float foodDegregation;
-    public float foodSleepDegregation;
     public float energyDegregation;
 
     public Stats stats;
 	public float timeWorking;
+	public bool randomiseStats = false;
 
 	public int waitingForDelivery;
 
@@ -54,12 +55,33 @@ public class HumanLife : MonoBehaviour {
 		agent = GetComponent<NavMeshAgent> ();
 		agent.stoppingDistance = minDist;
 		time = GameObject.FindObjectOfType<CurrentTime> ();
-		entertainment = GameObject.FindGameObjectWithTag ("Entertainment");
+		calorieBurnLookup = GameObject.FindObjectOfType<CalorieBurnTable> ();
 		stats.ageDays = stats.age * 365;
+
+		if (randomiseStats) {
+			stats.dexterity = Random.RandomRange (0, 10);
+			stats.intelligence = Random.RandomRange (0, 10);
+			stats.strength = Random.RandomRange (0, 10);
+		}
 	}
 
 	// Update is called once per frame
 	void Update () {
+		//test to disable agent navigation if they are at their destination
+		/*if (agent.hasPath) {
+			if (agent.remainingDistance < minDist) {
+				GetComponent<CapsuleCollider> ().enabled = false;
+				agent.enabled = false;
+				agent.velocity = Vector3.zero;
+			} else {
+				GetComponent<CapsuleCollider> ().enabled = true;
+				agent.enabled = true;
+			}
+		} else {
+			GetComponent<CapsuleCollider> ().enabled = false;
+			agent.enabled = false;
+			agent.velocity = Vector3.zero;
+		}*/
 		if (stats.job) {
 			if (stats.job.hours.workHours.x > stats.job.hours.workHours.y) {
 				incomePerMonth = ((24 - stats.job.hours.workHours.x) + stats.job.hours.workHours.y) * stats.income * 28;
@@ -103,11 +125,31 @@ public class HumanLife : MonoBehaviour {
 
         if (state == 3)
         {
-            food -= foodSleepDegregation * time.timeMult * Time.deltaTime;
+			food -= calorieBurnLookup.taskCostPerSecond("Sleeping") * time.timeMult;
         } else
         {
             energy -= energyDegregation * time.timeMult * Time.deltaTime;
-            food -= foodDegregation * time.timeMult * Time.deltaTime;
+
+			if (agent.enabled) {
+				
+				food -= calorieBurnLookup.taskCostPerSecond("Walking") * time.timeMult;
+
+			} else {
+				bool foodDegraded = false;
+				if (stats.accomodation.home != null) {
+					if (Functions.checkDistance (agent, stats.accomodation.home.transform.position, minDist)) {
+						foodDegraded = true;
+						food -= calorieBurnLookup.taskCostPerSecond("Resting") * time.timeMult;
+					}
+				} 
+				if (!foodDegraded) {
+					if (stats.jobData != null) {
+						foodDegraded = true;
+						food -= calorieBurnLookup.taskCostPerSecond (stats.job.jobType) * time.timeMult;
+					}
+				}
+			}
+
         }
 	}
 
@@ -130,7 +172,7 @@ public class HumanLife : MonoBehaviour {
 
 			if (testTime (stats.job.hours.workHours.x - stats.travelHours, stats.job.hours.workHours.y)) {
 
-				if (food >= maxFood / 10) {
+				if (food >= targetFoodLevel) {
 					if (energy >= maxEnergy / 10) {
 						state = 0;
 					} else {
@@ -142,7 +184,7 @@ public class HumanLife : MonoBehaviour {
 						}
 					}
 				} else {
-					if (testTime (stats.job.hours.breakTime.x, stats.job.hours.breakTime.y)) {
+					if (testTime (stats.job.hours.breakTime.x, stats.job.hours.breakTime.y) || food <= 0) {
 						//grab food
 						state = 1;
 					} else {
@@ -214,7 +256,7 @@ public class HumanLife : MonoBehaviour {
 
     void Sleep() {
 		if (stats.accomodation.home) {
-			if (food <= maxFood / 10) {
+			if (food <= minimumFoodLevel) {
 				eatFood ();
 				return;
 			} else {
@@ -294,9 +336,7 @@ public class HumanLife : MonoBehaviour {
 				}
 			}
 		}
-		if (Functions.checkDistance (agent, stats.job.transform.position, minDist)) {
-			//energy -= energyDegregation * time.timeMult;
-			//cash += Time.deltaTime * income * time.timeMult;
+		if (Functions.checkDistance (agent, stats.company.buildingPosition.transform.position, minDist)) {
 			if (stats.job.work (this)) {
 				timeWorking += time.timeMult * Time.deltaTime;
 			}
@@ -323,7 +363,7 @@ public class HumanLife : MonoBehaviour {
 				List<Product> tempProducts = bus.searchProducts (new shopTest(itemTypeRequired, itemNameRequired, this));
 				if (tempProducts != null) {
 					if (tempProducts.Count != 0) {
-						if (Vector3.Distance (transform.position, bus.transform.position) < distance) {
+						if (Vector3.Distance (transform.position, bus.buildingPosition.transform.position) < distance) {
 							distance = Vector3.Distance (transform.position, bus.transform.position);
 							closest = bus;
 							onSale.Clear ();
@@ -406,8 +446,10 @@ public class HumanLife : MonoBehaviour {
 				}
 			}
 		}
-		//add business to ignore list due to not having item
-		ignoreForCurrent.Add (shopBusiness);
+		if (!ignoreForCurrent.Contains (shopBusiness)) {
+			//add business to ignore list due to not having item
+			ignoreForCurrent.Add (shopBusiness);
+		}
 		return false;
 	}
 		
@@ -435,7 +477,7 @@ public class HumanLife : MonoBehaviour {
 				if (currentBusiness.online && attemptDelivery) {
 					if (!testShop (currentBusiness, compareProductValue, true, true)) {
 						if (currentBusiness.inStore) {
-							if (Functions.checkDistanceBusiness (this, agent, currentBusiness, currentBusiness.transform.position, minDist)) {
+							if (Functions.checkDistanceBusiness (this, agent, currentBusiness, currentBusiness.buildingPosition.transform.position, minDist)) {
 								testShop (currentBusiness, compareProductValue, false, false);
 								currentBusiness = null;
 							}
@@ -447,7 +489,7 @@ public class HumanLife : MonoBehaviour {
 					}
 				} else {
 					//check if person is within range of business
-					if (Functions.checkDistanceBusiness (this, agent, currentBusiness, currentBusiness.transform.position, minDist)) {
+					if (Functions.checkDistanceBusiness (this, agent, currentBusiness, currentBusiness.buildingPosition.transform.position, minDist)) {
 						testShop (currentBusiness, compareProductValue, false, false);
 						currentBusiness = null;
 					}
@@ -459,11 +501,13 @@ public class HumanLife : MonoBehaviour {
 	}
 
 	void Entertainment() {
+		/*
 		if (Functions.checkDistance (agent, entertainment.transform.position,minDist)) {
 			if (Vector3.Distance (transform.position, entertainment.transform.position) < minDist) {
 				happiness += Time.deltaTime * time.timeMult;
 			}
 		}
+		*/
 	}
 
 	public void recalculateSleep() {

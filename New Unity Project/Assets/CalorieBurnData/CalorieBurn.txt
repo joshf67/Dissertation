@@ -1,0 +1,8 @@
+7
+Walking:0.05
+Running:0.2
+Sleeping:0.0025
+Resting:0.01
+Default:0
+DeskWork:0.025
+ManualLabour:0.035

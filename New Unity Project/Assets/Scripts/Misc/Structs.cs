@@ -19,7 +19,6 @@ public struct Stats
 
 	public bool inEducation;
 
-	public string jobTitle;
 	public Job job;
 	public JobData jobData;
 	public Business company;
@@ -69,6 +68,7 @@ public struct jobStats {
 [System.Serializable]
 public struct deliveryInfo {
 	public List<item> items;
+	public List<float> itemPrices;
 	public HumanLife recipient;
 }
 

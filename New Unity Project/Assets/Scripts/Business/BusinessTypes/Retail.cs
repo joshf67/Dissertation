@@ -27,8 +27,10 @@ public class Retail : Business {
 						if (occupations [a].open) {
 							deliveryInfo details = new deliveryInfo ();
 							details.items = new List<item> ();
+							details.itemPrices = new List<float> ();
 							details.items.Add (products [data.index].data);
 							details.recipient = data.buyer;
+							details.itemPrices.Add (products [data.index].cost);
 							((Delivery)occupations [a]).deliveryJobs.Add (details);
 
 							data.buyer.cash -= products [data.index].cost;

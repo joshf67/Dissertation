@@ -7,6 +7,7 @@ public class Job : MonoBehaviour {
 	public int paymentDays;
 	public bool paymentMade;
 
+	public string jobType;
 	public float pay;
 	public jobDetails hours;
 
@@ -15,6 +16,7 @@ public class Job : MonoBehaviour {
 	public bool delivery;
 
 	public int requiredWorkers;
+	public float jobSearchResetTime;
 	public float jobSearchTime;
 
 	public jobStats requiredStats;
@@ -46,12 +48,18 @@ public class Job : MonoBehaviour {
 		workers [workers.Count - 1].worker = worker;
 	}
 
-	public void removeWorker(HumanLife worker) {
+	public void removeWorker(HumanLife worker, bool addToRequiredWorkers) {
 		for (int a = 0; a < workers.Count; a++) {
 			if (workers [a].worker == worker) {
+				workers [a].worker.stats.job = null;
+				workers [a].worker.stats.jobData = null;
 				workers.RemoveAt (a);
-				return;
+				break;
 			}
+		}
+		if (addToRequiredWorkers) {
+			requiredWorkers++;
+			jobSearchTime = jobSearchResetTime;
 		}
 	}
 
