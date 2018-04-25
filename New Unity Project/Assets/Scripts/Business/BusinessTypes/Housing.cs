@@ -51,10 +51,13 @@ public class Housing : Business {
 			if (prod.type == data.productType) {
 				//check if product is equal to item type
 				if (prod.data.occupants.Count == 0) {
-					if (compareProduct(prod, data.person)) {
-						if (prod.data.rooms.Count >= data.person.stats.accomodation.requiredRooms) {
-							returnVal.Add (prod);
-						} 
+					//test if the house is active
+					if (prod.data.obj.activeSelf) {
+						if (compareProduct (prod, data.person)) {
+							if (prod.data.rooms.Count >= data.person.stats.accomodation.requiredRooms) {
+								returnVal.Add (prod);
+							} 
+						}
 					}
 				}
 			}
