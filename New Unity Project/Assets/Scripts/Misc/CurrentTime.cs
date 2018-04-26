@@ -23,6 +23,7 @@ public class CurrentTime : MonoBehaviour {
 	public GUIStyle boxStyle;
 	public GUIStyle titleStyle;
 	public GUIStyle displayStyle;
+	public bool expandUI = false;
 
 	// Update is called once per frame
 	void Update () {
@@ -125,46 +126,67 @@ public class CurrentTime : MonoBehaviour {
 	}
 
 	void OnGUI() {
+
+		//test if the UI is expanded
+		if (!expandUI) {
+
+			//display background
+			GUI.depth = 0;
+			GUI.Box (new Rect (new Vector2 (400, 0), new Vector2 (320, 30)), "", boxStyle); 
+
+			//display title
+			GUI.depth = 1;
+			//display buttons to modify expandUI variable
+			if (GUI.Button (new Rect (new Vector2 (430, 5), new Vector2 (260, 20)), "Time Control")) {
+				expandUI = !expandUI;
+			}
+
+		} 
+		else {
 		
-		//display background
-		GUI.depth = 0;
-		GUI.Box (new Rect (new Vector2 (400, 0), new Vector2 (320, 140)), "", boxStyle); 
+			//display background
+			GUI.depth = 0;
+			GUI.Box (new Rect (new Vector2 (400, 0), new Vector2 (320, 140)), "", boxStyle); 
 
-		//display title
-		GUI.depth = 1;
-		GUI.Label(new Rect (new Vector2 (400, 5), new Vector2 (320, 140)), "Time Control", titleStyle); 
-
-		//display time mult variable
-		GUI.Label(new Rect (new Vector2 (460, 25), new Vector2 (320, 140)), "Time Mult: ", displayStyle); 
-		GUI.Label(new Rect (new Vector2 (485, 65), new Vector2 (320, 140)), timeMult.ToString(), displayStyle); 
-
-		//display buttons to modify above variable
-		if (GUI.Button (new Rect (new Vector2 (430, 100), new Vector2 (60, 30)), "Up")) {
-			if (timeMult < 120) {
-				timeMult += 6;
+			//display title
+			GUI.depth = 1;
+			//display buttons to modify expandUI variable
+			if (GUI.Button (new Rect (new Vector2 (430, 5), new Vector2 (260, 20)), "Time Control")) {
+				expandUI = !expandUI;
 			}
-		}
 
-		if (GUI.Button (new Rect (new Vector2 (490, 100), new Vector2 (60, 30)), "Down")) {
-			if (timeMult >= 6) {
-				timeMult -= 6;
+			//display time mult variable
+			GUI.Label (new Rect (new Vector2 (460, 25), new Vector2 (320, 140)), "Time Mult: ", displayStyle); 
+			GUI.Label (new Rect (new Vector2 (485, 65), new Vector2 (320, 140)), timeMult.ToString (), displayStyle); 
+
+			//display buttons to modify above variable
+			if (GUI.Button (new Rect (new Vector2 (430, 100), new Vector2 (60, 30)), "Up")) {
+				if (timeMult < 120) {
+					timeMult += 6;
+				}
 			}
-		}
 
-		//display delta time variable
-		GUI.Label(new Rect (new Vector2 (600, 25), new Vector2 (320, 140)), "Delta Mult: ", displayStyle); 
-		GUI.Label(new Rect (new Vector2 (625, 65), new Vector2 (320, 140)), speed.ToString(), displayStyle); 
-
-		//display buttons to modify above variable
-		if (GUI.Button (new Rect (new Vector2 (570, 100), new Vector2 (60, 30)), "Up")) {
-			if (speed < 100) {
-				speed += 5;
+			if (GUI.Button (new Rect (new Vector2 (490, 100), new Vector2 (60, 30)), "Down")) {
+				if (timeMult >= 6) {
+					timeMult -= 6;
+				}
 			}
-		}
 
-		if (GUI.Button (new Rect (new Vector2 (630, 100), new Vector2 (60, 30)), "Down")) {
-			if (speed >= 5) {
-				speed -= 5;
+			//display delta time variable
+			GUI.Label (new Rect (new Vector2 (600, 25), new Vector2 (320, 140)), "Delta Mult: ", displayStyle); 
+			GUI.Label (new Rect (new Vector2 (625, 65), new Vector2 (320, 140)), speed.ToString (), displayStyle); 
+
+			//display buttons to modify above variable
+			if (GUI.Button (new Rect (new Vector2 (570, 100), new Vector2 (60, 30)), "Up")) {
+				if (speed < 100) {
+					speed += 5;
+				}
+			}
+
+			if (GUI.Button (new Rect (new Vector2 (630, 100), new Vector2 (60, 30)), "Down")) {
+				if (speed >= 5) {
+					speed -= 5;
+				}
 			}
 		}
 
