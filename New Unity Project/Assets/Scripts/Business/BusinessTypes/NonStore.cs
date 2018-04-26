@@ -4,36 +4,45 @@ using UnityEngine;
 
 public class NonStore : Business {
 
-	protected override bool charge (purchaseOptions data)
-	{
-		return false;
-	}
+	//This class creates an empty business that does nothing,
+	//however due to needing to override the functions below
+	//these empty functions have been created
 
-	protected override List<Product> searchForProduct(shopTest data) {
-		return new List<Product> ();
-	}
-
-	protected override void arrangeProduct (List<Product> data)
+	protected override void UpdateBusiness () 
 	{
 		return;
 	}
 
-	protected override bool compare (Product one, HumanLife person)
+	protected override bool Charge (PurchaseOptions data)
 	{
 		return false;
 	}
 
-	protected override bool compareCost (Product one, HumanLife person)
+	protected override List<Product> SearchForProduct(ShopTest data) {
+		return new List<Product> ();
+	}
+
+	protected override void ArrangeProduct (List<Product> data)
+	{
+		return;
+	}
+
+	protected override bool Compare (Product one, HumanLife person)
 	{
 		return false;
 	}
 
-	protected override bool checkProduct (Product one)
+	protected override bool CompareCost (Product one, HumanLife person)
 	{
 		return false;
 	}
 
-	protected override void dailyCheck (Vector3 currentDate)
+	protected override bool CheckProduct (Product one)
+	{
+		return false;
+	}
+
+	protected override void DailyCheck (Vector3 currentDate)
 	{
 		return;
 	}

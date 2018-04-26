@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+//class that stores storage data
 public class FurnitureStorage : Furniture {
-	public List<item> items;
+	public List<Item> items;
 }

@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class ActivateCitySections : MonoBehaviour {
 
+	//store time to spawn objects and object list
 	public List <GameObject> toActivate = new List<GameObject>();
 	public float sectionSpawnTimer = 0;
 	float currentTime = 0;
@@ -19,7 +20,7 @@ public class ActivateCitySections : MonoBehaviour {
 		if (currentTime <= sectionSpawnTimer) {
 			currentTime++;
 		} else {
-			//set object to active and then remove it from list
+			//set random object to active and then remove it from list
 			currentTime = 0;
 			int random = Random.Range (0, toActivate.Count - 1);
 			toActivate [random].SetActive (true);

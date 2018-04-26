@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+//class that stores job information for worker
 public class JobData : ScriptableObject {
 	public HumanLife worker;
 	public bool ignoreDistance;
@@ -14,13 +15,14 @@ public class JobData : ScriptableObject {
 	}
 }
 
-public class deliveryDetails : JobData {
-	public List<item> deliveryItems;
+//class that stores delivery data for each delivery purchase
+public class DeliveryDetails : JobData {
+	public List<Item> deliveryItems;
 	public Vector3 destination;
 	public HumanLife recipient;
 	public bool deliveryToBeMade;
 	public float startDeliveryTime;
 
-	public deliveryDetails (HumanLife actor) : base(actor) {
+	public DeliveryDetails (HumanLife actor) : base(actor) {
 	}
 }

@@ -7,35 +7,44 @@ public class Retail : Business {
 	public List<ItemProduct> products;
 
 	void Start() {
+		//add all products on this object to local data
 		foreach(ItemProduct prod in gameObject.GetComponents<ItemProduct>()) {
 			products.Add (prod);
 		}
+		//setup each products local index
 		for(int a = 0; a < products.Count; a++) {
 			products [a].index = a;
 		}
 	}
 
-	protected override bool charge (purchaseOptions data)
+	//function that tests and charges if it possible to buy items
+	protected override bool Charge (PurchaseOptions data)
 	{
+		//check if the buyer has enough cash
 		if (data.buyer.cash >= products [data.index].cost) {
 
-
+			//check if the type of purchase is delivery
 			if (data.delivery) {
-				
+
+				//loop through all jobs
 				for (int a = 0; a < occupations.Count; a++) {
+					//check if current job is a delivery job
 					if (occupations [a].delivery) {
+						//check if the current job is open
 						if (occupations [a].open) {
-							deliveryInfo details = new deliveryInfo ();
-							details.items = new List<item> ();
+
+							//setup delivery data required
+							DeliveryInfo details = new DeliveryInfo ();
+							details.items = new List<Item> ();
 							details.itemPrices = new List<float> ();
 							details.items.Add (products [data.index].data);
 							details.recipient = data.buyer;
 							details.itemPrices.Add (products [data.index].cost);
 							((Delivery)occupations [a]).deliveryJobs.Add (details);
 
+							//remove cash from the buyer and add cash to this store
 							data.buyer.cash -= products [data.index].cost;
 							data.buyer.waitingForDelivery++;
-							GameObject.FindObjectOfType<CurrentTime> ().addPurchase ();
 
 							cash += products [data.index].cost;
 							return true;
@@ -43,10 +52,11 @@ public class Retail : Business {
 					}
 				}
 
-			} else if (inStore && !data.delivery) {
+			} //if customer is in shop check if the shop has a job that sells instore
+			else if (inStore && !data.delivery) {
+				//remove cash from the buyer and add cash to this store
 				data.buyer.cash -= products [data.index].cost;
 				data.buyer.inventory.Add(products [data.index].data);
-				GameObject.FindObjectOfType<CurrentTime> ().addPurchase ();
 				cash += products [data.index].cost;
 				return true;
 			}
@@ -55,7 +65,8 @@ public class Retail : Business {
 		return false;
 	}
 
-	protected override List<Product> searchForProduct(shopTest data) {
+	//function to search for specific products
+	protected override List<Product> SearchForProduct(ShopTest data) {
 		//setup return value
 		List<Product> returnVal = new List<Product> ();
 		//loop through all products
@@ -75,17 +86,23 @@ public class Retail : Business {
 				}
 			}
 		}
-		arrangeProduct (returnVal);
+		ArrangeProduct (returnVal);
 		return returnVal;
 	}
 
-	protected override void arrangeProduct (List<Product> data)
+	//function to sort products by best effect first
+	protected override void ArrangeProduct (List<Product> data)
 	{
 		bool more = false;
+
+		//loop until list is sorted
 		do {
 			more = false;
+			//loop through list elements
 			for (int a = 0; a < data.Count - 1; a++) {
+				//test if the current product is worse than the next one
 				if (((ItemProduct)data [a]).data.effect < ((ItemProduct)data [a + 1]).data.effect) {
+					//swap the products around
 					Product tempProduct = data [a];
 					data [a] = data [a + 1];
 					data [a + 1] = tempProduct;
@@ -95,33 +112,37 @@ public class Retail : Business {
 		} while (more);
 	}
 
-	protected override bool compare (Product one, HumanLife person)
+	//function to check if products effects are below persons needs
+	protected override bool Compare (Product one, HumanLife person)
 	{
 		switch (((ItemProduct)one).data.itemType) {
 		case itemTypes.food:
 			return ((ItemProduct)one).data.effect < (person.maxFood - person.food);
-			break;
 		case itemTypes.energy:
 			return ((ItemProduct)one).data.effect < (person.maxEnergy - person.energy);
-			break;
 		case itemTypes.happiness:
 			return ((ItemProduct)one).data.effect < (person.maxHappiness - person.happiness);
-			break;
 		}
 		return false;
 	}
 
-	protected override bool compareCost (Product one, HumanLife person)
+	//test if the person can afford the product
+	protected override bool CompareCost (Product one, HumanLife person)
 	{
 		return (((ItemProduct)one).cost <= person.cash);
 	}
 
-	protected override bool checkProduct (Product one)
+	protected override bool CheckProduct (Product one)
 	{
 		return true;
 	}
 
-	protected override void dailyCheck (Vector3 currentDate)
+	protected override void DailyCheck (Vector3 currentDate)
+	{
+		return;
+	}
+
+	protected override void UpdateBusiness () 
 	{
 		return;
 	}

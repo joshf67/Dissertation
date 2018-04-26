@@ -4,8 +4,10 @@ using UnityEngine;
 
 public class Student : Job {
 
-	public override bool work (HumanLife student)
+	//function that handles what happens when workers work
+	public override bool Work (HumanLife student)
 	{
+		//increase each statGrowth by delta time and levelup if above 100
 		student.stats.intellegenceGrowth += Time.deltaTime * time.timeMult;
 		if (student.stats.intellegenceGrowth > 100) {
 			student.stats.intellegenceGrowth = 0;

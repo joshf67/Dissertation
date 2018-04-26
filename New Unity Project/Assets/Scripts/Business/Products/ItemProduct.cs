@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+//class that stores item product data
 public class ItemProduct : Product {
 
-	public item data;
+	//store item data
+	public Item data;
 
 }

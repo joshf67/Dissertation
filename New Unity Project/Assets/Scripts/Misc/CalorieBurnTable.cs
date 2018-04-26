@@ -12,16 +12,22 @@ public class CalorieBurnTable : MonoBehaviour {
 	[SerializeField]
 	public List<CalorieDict> calorieBurn;
 
+	//function that gets current calorie cost of action
 	public float taskCost(string task) {
 		int index = -1;
+
+		//search for element and return index if it exists
 		if (CalorieDict.Contains (calorieBurn, new CalorieDict(task, 0), out index)) {
 			return calorieBurn [index].cost;
 		}
+
+		//log an error if the element doesn't exist
 		Debug.LogError ("Task does not exist: " + task);
 		return 0;
 	}
 
-	public float taskCostPerSecond(string task) {
+	//function that returns the calorie cost per second
+	public float TaskCostPerSecond(string task) {
 		return taskCost (task) * Time.deltaTime;
 	}
 
@@ -42,6 +48,7 @@ public class CalorieBurnEditor : Editor
 
 		serializedObject.Update ();
 
+		//grab current calorie table and store it in a local variable
 		CalorieBurnTable _target = (CalorieBurnTable)target;
 		List<CalorieDict> tempDict = _target.calorieBurn;
 
@@ -53,7 +60,8 @@ public class CalorieBurnEditor : Editor
 		EditorGUILayout.BeginHorizontal ();
 
 		//setup directory
-		string dir = Application.dataPath + Path.DirectorySeparatorChar + "CalorieBurnData" + Path.DirectorySeparatorChar;
+		string dir = Application.dataPath + Path.DirectorySeparatorChar
+						+ "CalorieBurnData" + Path.DirectorySeparatorChar;
 
 		//save calorie dict to file
 		if (GUILayout.Button ("Save"))
@@ -106,7 +114,7 @@ public class CalorieBurnEditor : Editor
 				string[] lineDataSplit = new string[0];
 				int count = int.Parse(reader.ReadLine ());
 
-				//save all calorie data to file
+				//save all calorie data to table contents
 				for (int a = 0; a < count; a++) {
 					lineData = "";
 					lineData = reader.ReadLine ();
@@ -120,9 +128,6 @@ public class CalorieBurnEditor : Editor
 		}
 
 		EditorGUILayout.EndHorizontal ();
-
-
-
 		EditorGUILayout.BeginHorizontal ();
 
 		//add new calorie burn index
@@ -138,10 +143,11 @@ public class CalorieBurnEditor : Editor
 			}
 		}
 
+		//display add data section
 		calorieBurnTask = EditorGUILayout.TextField(calorieBurnTask);
-
 		calorieBurnValue = EditorGUILayout.FloatField(calorieBurnValue);
 
+		//setup new calorie dictionary
 		CalorieDict tempDictChange = new CalorieDict ();
 
 		EditorGUILayout.EndHorizontal ();
@@ -150,17 +156,17 @@ public class CalorieBurnEditor : Editor
 		for (int a = 0; a < tempDict.Count; a++) {
 			EditorGUILayout.BeginHorizontal ();
 
-
-
+			//store any changes make to current calorie value
 			tempDictChange.task = EditorGUILayout.TextField (tempDict[a].task);
-
 			tempDictChange.cost = EditorGUILayout.FloatField (tempDict[a].cost);
+
 
 			if (tempDictChange.task != tempDict [a].task || tempDictChange.cost != tempDict [a].cost) {
 				tempDict [a] = tempDictChange;
 				break;
 			}
 
+			//display remove button to delete index
 			if (GUILayout.Button ("Remove"))
 			{
 				tempDict.RemoveAt (a);
@@ -169,9 +175,9 @@ public class CalorieBurnEditor : Editor
 
 			EditorGUILayout.EndHorizontal ();
 		}
-
+			
+		//apply changes to calorieDict
 		_target.calorieBurn = tempDict;
-
 		serializedObject.ApplyModifiedProperties ();
 
 	}
@@ -189,26 +195,32 @@ public struct CalorieDict
 	public string task;
 	public float cost;
 
+	//default constructor for calorie data
 	public CalorieDict(string _task, float _cost)
 	{
 		task = _task;
 		cost = _cost;
 	}
 
+	//override default comparison to custom one
 	public static bool operator == (CalorieDict one, CalorieDict two)
 	{
 		return one.task == two.task;
 	}
 
+	//override default comparison to custom one
 	public static bool operator != (CalorieDict one, CalorieDict two)
 	{
 		return one.task != two.task;
 	}
 
+	//function that checks if a element is within calorieDict
 	public static bool Contains(List<CalorieDict> list, CalorieDict test, out int index)
 	{
+		//loop through and return true if element has been found
 		for (int a = 0; a < list.Count; a++) {
 			if (test == list[a]) {
+				//update index if found
 				index = a;
 				return true;
 			}

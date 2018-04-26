@@ -4,41 +4,48 @@ using UnityEngine;
 
 public abstract class Business : MonoBehaviour {
 
+	//basic vairables for businesses
 	public float cash;
 	public float rent;
 	public float rentDays;
-
 	public bool online;
-	//public List<HumanLife> customersOnline;
-
 	public bool inStore;
-	//public List<HumanLife> customersInStore;
 
+	//vairables for business jobs
 	public List<Job> occupations;
 	public bool open;
 
+	//variable for where the enterance is
 	public GameObject buildingPosition;
 
+	//store current day and first tick
 	float currentDay = 0;
-
 	bool firstTick = true;
 
 	// Update is called once per frame
 	void Update () {
+		//check if this is the first tick since start and add all jobs to list
 		if (firstTick) {
 			firstTick = false;
 			foreach (Job job in gameObject.GetComponents<Job> ()) {
 				occupations.Add (job);
 			}
 		}
-		//save current day
+
+		UpdateBusiness ();
+
+		//save current day and do daily check
 		if (currentDay != GameObject.FindObjectOfType<CurrentTime> ().CurrentDWMY.x) {
 			currentDay = GameObject.FindObjectOfType<CurrentTime> ().CurrentDWMY.x;
-			dailyCheck (GameObject.FindObjectOfType<CurrentTime> ().CurrentDWMY);
+			DailyCheck (GameObject.FindObjectOfType<CurrentTime> ().CurrentDWMY);
+
+			//pay rent on rent day
 			if (currentDay == rentDays) {
 				cash -= rent;
 			}
 		}
+
+		//check if the business has failed
 		if (cash <= 0) {
 			GameObject.Destroy (gameObject);
 		}
@@ -70,7 +77,7 @@ public abstract class Business : MonoBehaviour {
 				if (job.jobSearchTime <= 0) {
 					if (job.applications.Count != 0) {
 						//test all current applications
-						testApplications (job);
+						TestApplications (job);
 					}
 					job.jobSearchTime = job.jobSearchResetTime;
 				} else {
@@ -79,15 +86,16 @@ public abstract class Business : MonoBehaviour {
 			}
 
 			//check if job is open
-			pollWorkers (job);
+			PollWorkers (job);
 
 		}
 
 		//check if any job in business is open
-		open = testOpen();
+		open = TestOpen();
 	}
 
-	bool testOpen() {
+	bool TestOpen() {
+		//loop through all jobs and check if business is open
 		foreach (Job job in occupations) {
 			if (job.open || job.automated) {
 				return true;
@@ -96,7 +104,9 @@ public abstract class Business : MonoBehaviour {
 		return false;
 	}
 
-	public bool testStats(Stats stat, Job jobDetail) {
+	//test actors stats against required job stats
+	public bool TestStats(Stats stat, Job jobDetail) {
+		//return true if actor has stats above required
 		if (stat.age >= jobDetail.requiredStats.age.x && stat.age < jobDetail.requiredStats.age.y) {
 			if (stat.intelligence >= jobDetail.requiredStats.intellegence) {
 				if (stat.dexterity >= jobDetail.requiredStats.dexterity) {
@@ -109,21 +119,18 @@ public abstract class Business : MonoBehaviour {
 		return false;
 	}
 
-	void sortApplicationsBasedOnStats(Job job) {
+	void SortApplicationsBasedOnStats(Job job) {
 		//arrange based on total stats
-		int ops = 0;
 		bool more = false;
 		do {
 			more = false;
 			//loop through all applications
 			for (int a = 0; a < job.applications.Count - 1; a++) {
 
-				ops++;
-
-
 				//store stats
 				Stats currentStats = job.applications [a].stats;
 				Stats nextStats = job.applications [a + 1].stats;
+
 				//calculate total score
 				float currentStatsTotal = currentStats.dexterity + currentStats.intelligence + currentStats.strength;
 				float nextStatsTotal = nextStats.dexterity + nextStats.intelligence + nextStats.strength;
@@ -137,12 +144,11 @@ public abstract class Business : MonoBehaviour {
 				}
 			}
 		} while (more);
-		bool pleaseWork = false;
 	}
 
-	void testApplications(Job job) {
+	void TestApplications(Job job) {
 		//arrange based on total stats
-		sortApplicationsBasedOnStats (job);
+		SortApplicationsBasedOnStats (job);
 
 		//accept applications
 		for (int a = 0; a < job.applications.Count; a++) {
@@ -151,7 +157,7 @@ public abstract class Business : MonoBehaviour {
 				return;
 			}
 
-			job.addWorker (job.applications [0]);
+			job.AddWorker (job.applications [0]);
 
 			//setup worker data
 			job.applications [0].stats.income = job.pay;
@@ -161,13 +167,12 @@ public abstract class Business : MonoBehaviour {
 
 			job.applications [0].resetApplications ();
 
-			GameObject.FindObjectOfType<CurrentTime> ().addHours(job.hours.workHours);
-
 			job.requiredWorkers--;
 		}
 	}
 
-	void pollWorkers(Job job) {
+	//test if job currently has workers
+	void PollWorkers(Job job) {
 		if (!job.automated) {
 			job.open = false;
 			foreach (JobData jobData in job.workers) {
@@ -180,48 +185,56 @@ public abstract class Business : MonoBehaviour {
 		}
 	}
 
-	public void payCosts() {
+	//pay the rent cost
+	public void PayCosts() {
 		cash -= rent;
 	}
 
 	//==============IMPORTANT========================
-	public virtual bool Buy(purchaseOptions data) {
-		return charge (data);
+	//the functions below are all virtual/abstract functions
+	//that classes that inherit from business require to
+	//work with other systems implemented within humanLife
+	//most of the functions have two types an abstract and virtual
+	//this is to get around most derived functions not being called
+
+	public virtual bool Buy(PurchaseOptions data) {
+		return Charge (data);
 	}
 
-	protected abstract bool charge (purchaseOptions data);
+	protected abstract bool Charge (PurchaseOptions data);
 
+	protected abstract void UpdateBusiness ();
 
-	public virtual List<Product> searchProducts(shopTest data) {
-		List<Product> returnVal = searchForProduct (data);
+	public virtual List<Product> SearchProducts(ShopTest data) {
+		List<Product> returnVal = SearchForProduct (data);
 		if (returnVal == null) {
 			returnVal = new List<Product> ();
 		}
 		return returnVal;
 	}
 
-	protected abstract List<Product> searchForProduct (shopTest data);
-	protected abstract void arrangeProduct (List<Product> data);
+	protected abstract List<Product> SearchForProduct (ShopTest data);
+	protected abstract void ArrangeProduct (List<Product> data);
 
-	public virtual bool comparePrice(Product one, HumanLife person) {
-		return compareCost (one, person);
+	public virtual bool ComparePrice(Product one, HumanLife person) {
+		return CompareCost (one, person);
 	}
 
-	protected abstract bool compareCost(Product one, HumanLife person);
+	protected abstract bool CompareCost(Product one, HumanLife person);
 
-	public virtual bool compareProduct(Product one, HumanLife person) {
-		return compare (one, person);
+	public virtual bool CompareProduct(Product one, HumanLife person) {
+		return Compare (one, person);
 	}
 
-	protected abstract bool compare(Product one, HumanLife person);
+	protected abstract bool Compare(Product one, HumanLife person);
 
-	public virtual bool testProduct(Product one) {
-		return checkProduct (one);
+	public virtual bool TestProduct(Product one) {
+		return CheckProduct (one);
 	}
 
-	protected abstract bool checkProduct(Product one);
+	protected abstract bool CheckProduct(Product one);
 
-	protected abstract void dailyCheck(Vector3 currentDate);
+	protected abstract void DailyCheck(Vector3 currentDate);
 	//==============IMPORTANT========================
 
 }
